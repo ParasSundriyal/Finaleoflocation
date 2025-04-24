@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,10 +23,12 @@ public class FileStorageService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
+    private Path uploadPath;
+
     @PostConstruct
     public void init() {
         try {
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
             if (!Files.exists(uploadPath)) {
                 logger.info("Creating upload directory at: {}", uploadPath);
                 Files.createDirectories(uploadPath);
@@ -39,7 +42,6 @@ public class FileStorageService {
 
     public List<String> uploadFiles(List<MultipartFile> files) {
         List<String> fileUrls = new ArrayList<>();
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         
         for (MultipartFile file : files) {
             try {
@@ -52,7 +54,7 @@ public class FileStorageService {
                 Path filePath = uploadPath.resolve(fileName);
                 
                 logger.info("Saving file to: {}", filePath);
-                Files.copy(file.getInputStream(), filePath);
+                Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
                 
                 fileUrls.add("/uploads/" + fileName);
                 logger.info("File saved successfully: {}", fileName);
@@ -65,8 +67,6 @@ public class FileStorageService {
     }
 
     public void deleteFiles(List<String> fileUrls) {
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-        
         for (String url : fileUrls) {
             try {
                 String fileName = url.substring(url.lastIndexOf("/") + 1);

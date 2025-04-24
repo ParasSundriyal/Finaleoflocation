@@ -242,6 +242,20 @@
                     <button onclick="showOccurrenceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <i class="fas fa-plus-circle mr-2"></i>सूचना दर्ज करें
                     </button>
+                    <div class="relative">
+                        <button id="soochnaButton" onclick="toggleSoochnaDropdown()" class="bg-white text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center">
+                            <i class="fas fa-bell mr-2"></i>सूचना अपडेट
+                            <span id="soochnaCount" class="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 hidden">0</span>
+                        </button>
+                        <div id="soochnaDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                            <div class="p-4">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">सूचना अपडेट (Soochna Updates)</h3>
+                                <div id="soochna-updates" class="space-y-4">
+                                    <!-- Soochna items will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <span id="username" class="text-gray-600"></span>
                     <button onclick="logout()" class="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
@@ -256,7 +270,7 @@
             <!-- Map -->
             <div class="col-span-1 md:col-span-3">
                 <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-2xl font-bold mb-4">Map View</h2>
+                    <h2 class="text-2xl font-bold mb-4">नक्शा देखें</h2>
                     <div id="map"></div>
                 </div>
             </div>
@@ -265,84 +279,84 @@
             <div class="col-span-1 space-y-6">
             <!-- Marker List -->
                 <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h2 class="text-xl font-bold mb-4">Available Locations</h2>
+                    <h2 class="text-xl font-bold mb-4">मौजूदा स्थान</h2>
                     <div class="marker-list" id="markerList">
                         <!-- Markers will be listed here -->
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Update the occurrence modal structure -->
-    <div id="occurrenceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
-        <div class="relative top-5 mx-auto p-5 border w-full max-w-md bg-white shadow-lg rounded-md">
-            <div class="flex flex-col h-full">
-                <div class="flex justify-between items-center pb-3">
-                    <p class="text-2xl font-bold">Report Occurrence</p>
-                    <div class="cursor-pointer z-50" onclick="closeOccurrenceModal()">
-                        <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
-                            <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
-                        </svg>
+        <!-- Update the occurrence modal structure -->
+        <div id="occurrenceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+            <div class="relative top-5 mx-auto p-5 border w-full max-w-md bg-white shadow-lg rounded-md">
+                <div class="flex flex-col h-full">
+                    <div class="flex justify-between items-center pb-3">
+                        <p class="text-2xl font-bold">सूचना दर्ज करें</p>
+                        <div class="cursor-pointer z-50" onclick="closeOccurrenceModal()">
+                            <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+                                <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
+                            </svg>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mt-4">
-                    <form id="occurrenceForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-bold text-gray-700">Title</label>
-                            <input type="text" id="title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea id="description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required></textarea>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Your Name</label>
-                            <input type="text" id="reporterName" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-                            <input type="tel" id="reporterPhone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Location</label>
-                            <div id="locationStatus" class="mt-1 text-sm">
-                                <span class="text-blue-600">
-                                    <i class="fas fa-location-arrow mr-2"></i>Detecting your location...
-                                </span>
+                    <div class="mt-4">
+                        <form id="occurrenceForm" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700">शीर्षक</label>
+                                <input type="text" id="title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
                             </div>
-                            <input type="hidden" id="latitude" required>
-                            <input type="hidden" id="longitude" required>
-                        </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Photos</label>
-                            <div class="mt-1 flex items-center space-x-4">
-                                <button type="button" id="cameraButton" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                    <i class="fas fa-camera mr-2"></i>
-                                    Take Photo
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">विवरण</label>
+                                <textarea id="description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">आपका नाम</label>
+                                <input type="text" id="reporterName" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">फ़ोन नंबर</label>
+                                <input type="tel" id="reporterPhone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">स्थान</label>
+                                <div id="locationStatus" class="mt-1 text-sm">
+                                    <span class="text-blue-600">
+                                        <i class="fas fa-location-arrow mr-2"></i>आपका स्थान पता लगाया जा रहा है...
+                                    </span>
+                                </div>
+                                <input type="hidden" id="latitude" required>
+                                <input type="hidden" id="longitude" required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">तस्वीरें</label>
+                                <div class="mt-1 flex items-center space-x-4">
+                                    <button type="button" id="cameraButton" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                        <i class="fas fa-camera mr-2"></i>
+                                        तस्वीर लें
+                                    </button>
+                                    <label class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                                        <i class="fas fa-upload mr-2"></i>
+                                        तस्वीरें अपलोड करें
+                                        <input type="file" id="photos" multiple accept="image/*" class="hidden">
+                                    </label>
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF अधिकतम 10MB</p>
+                                <div id="photoPreview" class="mt-2 grid grid-cols-4 gap-2"></div>
+                            </div>
+
+                            <div class="mt-5 flex justify-end">
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    सूचना जमा करें
                                 </button>
-                                <label class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
-                                    <i class="fas fa-upload mr-2"></i>
-                                    Upload Photos
-                                    <input type="file" id="photos" multiple accept="image/*" class="hidden">
-                                </label>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                            <div id="photoPreview" class="mt-2 grid grid-cols-4 gap-2"></div>
-                        </div>
-
-                        <div class="mt-5 flex justify-end">
-                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Submit Report
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -438,6 +452,8 @@
                 if (response.ok) {
                     const userData = await response.json();
                     document.getElementById('username').textContent = userData.username;
+                    // Store user ID in session storage
+                    sessionStorage.setItem('userId', userData.id);
                     loadMarkers();
                 } else {
                     window.location.href = 'login.html';
@@ -556,7 +572,7 @@
             const locationStatus = document.getElementById('locationStatus');
             
             if (!navigator.geolocation) {
-                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>Location detection is not supported by your browser</span>';
+                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>आपका ब्राउज़र स्थान का पता नहीं लगा सकता</span>';
                 return;
             }
 
@@ -567,11 +583,11 @@
                 document.getElementById('latitude').value = latitude;
                 document.getElementById('longitude').value = longitude;
                 
-                locationStatus.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Location detected successfully</span>';
+                locationStatus.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>स्थान का पता चल गया</span>';
             }
 
             function error() {
-                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>Unable to detect location</span>';
+                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>स्थान का पता नहीं चल पाया</span>';
             }
 
             navigator.geolocation.getCurrentPosition(success, error, {
@@ -589,8 +605,8 @@
                 cameraButton.addEventListener('click', handleCameraCapture);
             } else {
                 cameraButton.addEventListener('click', fallbackToFileUpload);
-                cameraButton.innerHTML = '<i class="fas fa-upload mr-2"></i>Upload from Device';
-                cameraButton.title = 'Your device does not have camera access';
+                cameraButton.innerHTML = '<i class="fas fa-upload mr-2"></i>डिवाइस से अपलोड करें';
+                cameraButton.title = 'आपके डिवाइस में कैमरा एक्सेस नहीं है';
             }
 
             document.getElementById('photos').addEventListener('change', function(e) {
@@ -670,12 +686,12 @@
             
             Array.from(files).forEach(file => {
                 if (!file.type.startsWith('image/')) {
-                    alert('Please upload only image files');
+                    alert('कृपया केवल तस्वीर फ़ाइलें अपलोड करें');
                     return;
                 }
 
                 if (file.size > 10 * 1024 * 1024) {
-                    alert('File size should not exceed 10MB');
+                    alert('फ़ाइल का साइज़ 10MB से अधिक नहीं होना चाहिए');
                     return;
                 }
 
@@ -712,12 +728,12 @@
             const longitude = document.getElementById('longitude').value;
 
             if (!latitude || !longitude) {
-                alert('Please wait for location detection or enable location services');
+                alert('कृपया स्थान का पता लगने की प्रतीक्षा करें या स्थान सेवाएं चालू करें');
                 return;
             }
 
             if (uploadedPhotos.length === 0) {
-                alert('Please upload at least one photo');
+                alert('कृपया कम से कम एक तस्वीर अपलोड करें');
                 return;
             }
 
@@ -759,15 +775,15 @@
 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to submit occurrence');
+                    throw new Error(errorData.message || 'सूचना जमा करने में त्रुटि हुई');
                 }
 
-                alert('Occurrence submitted successfully!');
+                alert('सूचना सफलतापूर्वक जमा की गई!');
                 closeOccurrenceModal();
                 loadMarkers(); // Refresh markers on the map
             } catch (error) {
                 console.error('Error:', error);
-                alert(error.message || 'Failed to submit occurrence. Please try again.');
+                alert(error.message || 'सूचना जमा करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
             }
         }
 
@@ -786,6 +802,35 @@
             document.getElementById('photoPreview').innerHTML = '';
             uploadedPhotos = [];
         }
+
+        function toggleSoochnaDropdown() {
+            const dropdown = document.getElementById('soochnaDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('soochnaDropdown');
+            const soochnaButton = document.getElementById('soochnaButton');
+            
+            if (!dropdown.contains(event.target) && !soochnaButton.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Update notification count
+        function updateSoochnaCount(count) {
+            const countElement = document.getElementById('soochnaCount');
+            if (count > 0) {
+                countElement.textContent = count;
+                countElement.classList.remove('hidden');
+            } else {
+                countElement.classList.add('hidden');
+            }
+        }
     </script>
+
+    <!-- Add the soochna.js script -->
+    <script src="js/soochna.js"></script>
 </body>
 </html> 

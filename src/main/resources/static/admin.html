@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin Dashboard - TehriMap</title>
+    <script src="js/config.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
@@ -264,6 +265,7 @@
             color: white;
             padding: 0.5rem;
             z-index: 1000;
+            position: relative;
         }
         #map-container {
             height: calc(100vh - 64px);
@@ -457,6 +459,7 @@
             position: relative;
             width: 100%;
             height: 100%;
+            z-index: 1;
         }
         
         #occurrenceSection {
@@ -556,6 +559,122 @@
             gap: 1rem;
             padding: 1rem;
         }
+
+        /* Update the modal styles */
+        #occurrenceModal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #occurrenceModal .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 6xl;
+            margin: 1rem;
+            position: relative;
+            z-index: 1002;
+        }
+
+        #occurrenceModal.hidden {
+            display: none;
+        }
+
+        /* Update the navbar z-index */
+        .navbar {
+            position: relative;
+            z-index: 1000;
+        }
+
+        /* Update the map container z-index */
+        .modal-map-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        #modalMap {
+            width: 100%;
+            height: 100%;
+            min-height: 300px;
+            z-index: 1;
+        }
+
+        /* Make sure the modal header stays on top */
+        #occurrenceModal .sticky {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10001;
+        }
+
+        /* Update z-index hierarchy for all modals and overlays */
+        .navbar {
+            position: relative;
+            z-index: 1000;
+        }
+
+        .section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            background-color: #ffffff;
+            z-index: 1;
+        }
+
+        /* Main occurrence modal */
+        #occurrenceModal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            overflow-y: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #occurrenceModal .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 6xl;
+            margin: 1rem;
+            position: relative;
+            z-index: 1002;
+        }
+
+        /* Emergency contacts modal (Aapda Mitra) */
+        .emergency-contacts-modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .emergency-contacts-modal .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 4xl;
+            margin: 1rem;
+            position: relative;
+            z-index: 2001 !important;
+        }
     </style>
 </head>
 <body>
@@ -566,9 +685,9 @@
                 <span class="text-2xl font-bold text-white">TehriMap</span>
                 <div class="flex flex-col md:flex-row gap-4">
                     <a href="admin.html" class="text-white px-3 py-2 rounded-md text-sm font-medium bg-blue-600">स्थान निर्धारण</a>
-                    <a href="manage-markers.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">Manage Markers</a>
+                    <a href="manage-markers.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">स्थान सूची</a>
                     <a href="emergency-contacts.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">Emergency Contacts</a>
-                    <a href="#" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium" onclick="showOccurrenceSection()">Manage Occurrences</a>
+                    <a href="#" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium" onclick="showOccurrenceSection()">सूचना प्रबंधन</a>
                 </div>
             </div>
 
@@ -656,7 +775,7 @@
 
         <div id="manage-markers" class="section">
             <div class="p-4">
-                <h2 class="text-xl font-bold mb-4">Manage Markers</h2>
+                <h2 class="text-xl font-bold mb-4">स्थान सूची</h2>
                 <div class="marker-list" id="markerList">
                     <!-- Markers will be loaded here -->
                 </div>
@@ -675,7 +794,7 @@
         <div id="manage-occurrences" class="section">
             <div class="p-4">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-bold">Manage Occurrences</h2>
+                    <h2 class="text-xl font-bold">सूचना प्रबंधन</h2>
                     <div class="flex space-x-4">
                         <select id="statusFilter" class="rounded-md border-gray-300">
                             <option value="ALL">All Status</option>
@@ -714,11 +833,10 @@
     </footer>
 
     <!-- Update the modal structure -->
-    <div id="occurrenceModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-[1000] overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
-            <div class="relative bg-white rounded-lg w-full max-w-6xl modal-content">
+    <div id="occurrenceModal" class="hidden">
+        <div class="modal-content">
                 <!-- Modal Header -->
-                <div class="sticky top-0 bg-white p-3 sm:p-4 border-b flex justify-between items-center z-10">
+            <div class="sticky p-3 sm:p-4 border-b flex justify-between items-center">
                     <h2 class="text-xl sm:text-2xl font-bold" id="modalTitle"></h2>
                     <button onclick="closeOccurrenceModal()" class="text-gray-500 hover:text-gray-700 p-2">
                         <i class="fas fa-times text-xl"></i>
@@ -726,7 +844,7 @@
                 </div>
 
                 <!-- Modal Content -->
-                <div class="flex flex-col md:flex-row modal-scroll">
+            <div class="flex flex-col md:flex-row">
                     <!-- Left Panel: Details and Photos -->
                     <div class="md:w-1/2 p-3 sm:p-6 border-b md:border-b-0 md:border-r">
                         <div id="modalContent"></div>
@@ -736,7 +854,6 @@
                     <div class="md:w-1/2 h-[300px] md:h-[600px]">
                         <div class="modal-map-container h-full">
                             <div id="modalMap" class="h-full"></div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -746,7 +863,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
-    <script src="js/config.js"></script>
     <script>
         // Add a default config if it's not loaded
         if (typeof config === 'undefined') {
@@ -1028,10 +1144,91 @@
                 window.location.href = 'login.html';
                 return;
             }
+
+            // Initialize map
             console.log('Initializing map...');
             initMap();
-        });
 
+            // Add event listeners for filters when they exist
+            const statusFilter = document.getElementById('statusFilter');
+            const sortOrder = document.getElementById('sortOrder');
+            
+            if (statusFilter) {
+                statusFilter.addEventListener('change', loadOccurrences);
+                }
+                
+            if (sortOrder) {
+                sortOrder.addEventListener('change', loadOccurrences);
+            }
+
+            // Add Markers link
+            const addMarkersLink = document.querySelector('a[href="admin.html"]');
+            if (addMarkersLink) {
+                addMarkersLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection('add-markers');
+                });
+        }
+
+            // Manage Occurrences link
+            const manageOccurrencesLink = document.querySelector('a[href="#"]');
+            if (manageOccurrencesLink) {
+                manageOccurrencesLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection('manage-occurrences');
+                    loadOccurrences();
+                });
+            }
+
+            // Add search input event listeners
+        const searchInput = document.getElementById('districtSearch');
+        const searchResults = document.getElementById('searchResults');
+        const policeSearchInput = document.getElementById('policeSearch');
+        const policeSearchResults = document.getElementById('policeSearchResults');
+
+            if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredDistricts = uttarakhandDistricts.filter(district => 
+                district.name.toLowerCase().includes(searchTerm)
+            );
+
+                    if (searchResults) {
+            searchResults.style.display = searchTerm ? 'block' : 'none';
+            searchResults.innerHTML = '';
+
+            filteredDistricts.forEach(district => {
+                const div = document.createElement('div');
+                div.className = 'search-result-item';
+                div.textContent = district.name;
+                div.addEventListener('click', () => {
+                    selectDistrict(district.name);
+                    searchResults.style.display = 'none';
+                    searchInput.value = district.name;
+                });
+                searchResults.appendChild(div);
+            });
+                    }
+                });
+            }
+
+            // Close search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (searchInput && searchResults && !searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+                if (policeSearchInput && policeSearchResults && !policeSearchInput.contains(e.target) && !policeSearchResults.contains(e.target)) {
+                    policeSearchResults.style.display = 'none';
+                }
+            });
+
+            // Load occurrences if we're on the occurrences section
+            if (window.location.hash === '#occurrences') {
+                showSection('manage-occurrences');
+                loadOccurrences();
+            }
+        });
+            
         // Update the selectDistrict function
         function selectDistrict(districtName) {
             const district = uttarakhandDistricts.find(d => d.name === districtName);
@@ -1062,79 +1259,6 @@
             }
         }
 
-        // Add change event listener to district select
-        document.getElementById('districtSearch').addEventListener('change', function(e) {
-            if (e.target.value) {
-                selectDistrict(e.target.value);
-            }
-        });
-
-        // Search functionality
-        const searchInput = document.getElementById('districtSearch');
-        const searchResults = document.getElementById('searchResults');
-        const policeSearchInput = document.getElementById('policeSearch');
-        const policeSearchResults = document.getElementById('policeSearchResults');
-        const findNearestPoliceBtn = document.getElementById('findNearestPoliceBtn');
-
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            const filteredDistricts = uttarakhandDistricts.filter(district => 
-                district.name.toLowerCase().includes(searchTerm)
-            );
-
-            searchResults.style.display = searchTerm ? 'block' : 'none';
-            searchResults.innerHTML = '';
-
-            filteredDistricts.forEach(district => {
-                const div = document.createElement('div');
-                div.className = 'search-result-item';
-                div.textContent = district.name;
-                div.addEventListener('click', () => {
-                    selectDistrict(district.name);
-                    searchResults.style.display = 'none';
-                    searchInput.value = district.name;
-                });
-                searchResults.appendChild(div);
-            });
-        });
-
-        // Police station search functionality
-        policeSearchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            
-            // Filter police stations based on search term
-            const filteredPoliceStations = policeStations.filter(station => 
-                station.name.toLowerCase().includes(searchTerm)
-            );
-
-            // Show/hide search results
-            policeSearchResults.style.display = searchTerm ? 'block' : 'none';
-            
-            // Clear previous results
-            policeSearchResults.innerHTML = '';
-
-            // Add filtered results
-            filteredPoliceStations.forEach(station => {
-                const div = document.createElement('div');
-                div.className = 'search-result-item';
-                div.textContent = station.name;
-                div.addEventListener('click', () => {
-                    map.setView([station.latitude, station.longitude], 14);
-                    policeSearchResults.style.display = 'none';
-                    policeSearchInput.value = station.name;
-                    // Find and open the marker popup
-                    const marker = markers.find(m => 
-                        m.getLatLng().lat === station.latitude && 
-                        m.getLatLng().lng === station.longitude
-                    );
-                    if (marker) {
-                        marker.openPopup();
-                    }
-                });
-                policeSearchResults.appendChild(div);
-            });
-        });
-
         // Update police stations list when district changes
         function updatePoliceStationsList() {
             policeStations = [];
@@ -1155,18 +1279,8 @@
             });
         }
 
-        // Close search results when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.style.display = 'none';
-            }
-            if (!policeSearchInput.contains(e.target) && !policeSearchResults.contains(e.target)) {
-                policeSearchResults.style.display = 'none';
-            }
-        });
-
         // Find nearest police station button
-        findNearestPoliceBtn.addEventListener('click', () => {
+        document.getElementById('findNearestPoliceBtn').addEventListener('click', () => {
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -1285,182 +1399,9 @@
 
         let modalMap = null;
 
-        function showOccurrenceDetails(occurrence) {
-            const modal = document.getElementById('occurrenceModal');
-            const title = document.getElementById('modalTitle');
-            const content = document.getElementById('modalContent');
-            
-            title.textContent = occurrence.title || 'Occurrence Details';
-            
-            content.innerHTML = `
-                <div class="space-y-6" data-occurrence-id="${occurrence.id}">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-sm font-medium text-gray-500">Description</label>
-                            <p class="mt-1 text-gray-900">${occurrence.description || 'No description available'}</p>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">Reporter Name</label>
-                                <p class="mt-1 text-gray-900">${occurrence.reporterName || 'Anonymous'}</p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">Reporter Phone</label>
-                                <p class="mt-1 text-gray-900">${occurrence.reporterPhone || 'Not provided'}</p>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">Reported At</label>
-                                <p class="mt-1 text-gray-900">${formatDate(occurrence.reportedAt)}</p>
-                            </div>
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">Status</label>
-                                <p class="mt-1">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                        occurrence.status === 'VERIFIED' ? 'bg-green-100 text-green-800' : 
-                                        occurrence.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 
-                                        'bg-yellow-100 text-yellow-800'
-                                    }">
-                                        ${occurrence.status || 'PENDING'}
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-
-                        ${occurrence.verifiedBy ? `
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-sm font-medium text-gray-500">Verified By</label>
-                                    <p class="mt-1 text-gray-900">${occurrence.verifiedBy}</p>
-                                </div>
-                                <div>
-                                    <label class="text-sm font-medium text-gray-500">Verified At</label>
-                                    <p class="mt-1 text-gray-900">${formatDate(occurrence.verifiedAt)}</p>
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <div class="space-y-2">
-                            <label class="text-sm font-medium text-gray-500">Verification Notes</label>
-                            <textarea id="verificationNotes" class="w-full p-2 border rounded-md" rows="3"
-                                    placeholder="Add verification notes here...">${occurrence.verificationNotes || ''}</textarea>
-                        </div>
-
-                        ${occurrence.photoIds && occurrence.photoIds.length > 0 ? `
-                            <div>
-                                <label class="text-sm font-medium text-gray-500">Photos</label>
-                                <div class="mt-2 grid grid-cols-2 gap-4">
-                                    ${occurrence.photoIds.map((_, index) => `
-                                        <div class="relative group">
-                                            <img src="${config.apiBaseUrl}/api/occurrences/${occurrence.id}/photos/${index}" 
-                                                 alt="Occurrence photo" 
-                                                 class="w-full h-40 object-cover rounded-lg cursor-pointer"
-                                                 onclick="showFullImage('${config.apiBaseUrl}/api/occurrences/${occurrence.id}/photos/${index}')"
-                                            />
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-
-                        <div class="flex justify-between pt-4 border-t">
-                            <div class="space-x-2">
-                                ${occurrence.status !== 'VERIFIED' ? `
-                                    <button onclick="verifyOccurrence(this)" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                                        <i class="fas fa-check"></i> Verify
-                                    </button>
-                                ` : ''}
-                                ${occurrence.status !== 'REJECTED' ? `
-                                    <button onclick="rejectOccurrence(this)" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                                        <i class="fas fa-times"></i> Reject
-                                    </button>
-                                ` : ''}
-                                <button onclick="showEmergencyContacts(this)" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                                    <i class="fas fa-phone-alt"></i> Aapda Mitr
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            modal.classList.remove('hidden');
-
-            // Initialize or update the map with a slight delay to ensure container is visible
-            setTimeout(() => {
-                if (!modalMap) {
-                    modalMap = L.map('modalMap', {
-                        zoomControl: true,
-                        scrollWheelZoom: true
-                    });
-                    
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '© OpenStreetMap contributors'
-                    }).addTo(modalMap);
-                }
-
-                modalMap.invalidateSize();
-
-                if (occurrence.latitude && occurrence.longitude) {
-                    modalMap.setView([occurrence.latitude, occurrence.longitude], 13);
-                    
-                    // Clear existing markers
-                    if (modalMap._occurrenceMarker) {
-                        modalMap.removeLayer(modalMap._occurrenceMarker);
-                    }
-                    
-                    // Add new marker
-                    modalMap._occurrenceMarker = L.marker([occurrence.latitude, occurrence.longitude]).addTo(modalMap);
-                    modalMap._occurrenceMarker.bindPopup(occurrence.title || 'Occurrence Location').openPopup();
-                }
-            }, 100);
-        }
-
-        function closeOccurrenceModal() {
-            document.getElementById('occurrenceModal').classList.add('hidden');
-            // Reset map view when closing modal
-            if (modalMap) {
-                modalMap.setView([30.0668, 79.0193], 7);
-                if (modalMap._occurrenceMarker) {
-                    modalMap.removeLayer(modalMap._occurrenceMarker);
-                }
-            }
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('occurrenceModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeOccurrenceModal();
-            }
-        });
-
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            try {
-                const date = new Date(dateString);
-                if (isNaN(date.getTime())) return 'N/A';
-                
-                const options = { 
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                };
-                return date.toLocaleDateString('en-US', options);
-            } catch (error) {
-                console.error('Error formatting date:', error);
-                return 'N/A';
-            }
-        }
-
         async function loadOccurrences() {
             try {
-                const response = await fetch('/api/occurrences', {
+                const response = await fetch(`${config.apiBaseUrl}/api/occurrences`, {
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                     }
@@ -1510,6 +1451,10 @@
                     const card = document.createElement('div');
                     card.className = 'bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200';
                     card.setAttribute('data-occurrence-id', occurrence.id);
+                    
+                    // Store the occurrence data as a data attribute
+                    card.setAttribute('data-occurrence', JSON.stringify(occurrence));
+                    
                     card.innerHTML = `
                         <div class="p-3 sm:p-4">
                             <div class="flex items-center justify-between mb-3">
@@ -1533,10 +1478,10 @@
                                     <i class="far fa-user mr-2"></i>
                                     <span>${occurrence.reporterName || 'Anonymous'}</span>
                                 </div>
-                            <button onclick="showOccurrenceDetails(${JSON.stringify(occurrence).replace(/"/g, '&quot;')})" 
+                                <button onclick="showOccurrenceDetails(this.closest('[data-occurrence]').getAttribute('data-occurrence'))" 
                                         class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                     View Details <i class="fas fa-chevron-right ml-1"></i>
-                            </button>
+                                </button>
                             </div>
                         </div>
                     `;
@@ -1557,6 +1502,173 @@
                         </div>
                     `;
                 }
+            }
+        }
+
+        // Update the showOccurrenceDetails function to handle the string input
+        function showOccurrenceDetails(occurrenceData) {
+            try {
+                // Parse the occurrence data if it's a string
+                const occurrence = typeof occurrenceData === 'string' ? JSON.parse(occurrenceData) : occurrenceData;
+                
+            const modal = document.getElementById('occurrenceModal');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
+            
+            title.textContent = occurrence.title || 'Occurrence Details';
+                
+                const reportedDate = occurrence.reportedAt ? new Date(occurrence.reportedAt).toLocaleString() : 'Not available';
+                const verifiedDate = occurrence.verifiedAt ? new Date(occurrence.verifiedAt).toLocaleString() : 'Not verified';
+            
+            content.innerHTML = `
+                <div class="space-y-6" data-occurrence-id="${occurrence.id}">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">Description</label>
+                            <p class="mt-1 text-gray-900">${occurrence.description || 'No description available'}</p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-500">Reporter Name</label>
+                                <p class="mt-1 text-gray-900">${occurrence.reporterName || 'Anonymous'}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-500">Reporter Phone</label>
+                                <p class="mt-1 text-gray-900">${occurrence.reporterPhone || 'Not provided'}</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium text-gray-500">Reported At</label>
+                                    <p class="mt-1 text-gray-900">${reportedDate}</p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-gray-500">Status</label>
+                                <p class="mt-1">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        occurrence.status === 'VERIFIED' ? 'bg-green-100 text-green-800' : 
+                                        occurrence.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 
+                                        'bg-yellow-100 text-yellow-800'
+                                    }">
+                                        ${occurrence.status || 'PENDING'}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-sm font-medium text-gray-500">Verification Notes</label>
+                            <textarea id="verificationNotes" class="w-full p-2 border rounded-md" rows="3"
+                                    placeholder="Add verification notes here...">${occurrence.verificationNotes || ''}</textarea>
+                        </div>
+
+                        ${occurrence.photoIds && occurrence.photoIds.length > 0 ? `
+                            <div>
+                                <label class="text-sm font-medium text-gray-500">Photos</label>
+                                <div class="mt-2 grid grid-cols-2 gap-4">
+                                    ${occurrence.photoIds.map((_, index) => `
+                                        <div class="relative group">
+                                            <img src="${config.apiBaseUrl}/api/occurrences/${occurrence.id}/photos/${index}" 
+                                                 alt="Occurrence photo" 
+                                                 class="w-full h-40 object-cover rounded-lg cursor-pointer"
+                                                 onclick="showFullImage('${config.apiBaseUrl}/api/occurrences/${occurrence.id}/photos/${index}')"
+                                            />
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="flex justify-between pt-4 border-t">
+                            <div class="space-x-2">
+                                ${occurrence.status !== 'VERIFIED' ? `
+                                    <button onclick="verifyOccurrence(this)" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                            <i class="fas fa-check mr-2"></i>Verify
+                                    </button>
+                                ` : ''}
+                                ${occurrence.status !== 'REJECTED' ? `
+                                    <button onclick="rejectOccurrence(this)" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                            <i class="fas fa-times mr-2"></i>Reject
+                                    </button>
+                                ` : ''}
+                                    <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" id="aapdaMitraBtn">
+                                        <i class="fas fa-phone-alt mr-2"></i>Aapda Mitra
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                // Add event listener for Aapda Mitra button
+                const aapdaMitraBtn = document.getElementById('aapdaMitraBtn');
+                if (aapdaMitraBtn) {
+                    aapdaMitraBtn.addEventListener('click', function() {
+                        console.log('Aapda Mitra button clicked');
+                        loadEmergencyContacts();
+                    });
+                }
+
+            modal.classList.remove('hidden');
+
+                // Initialize or update the map
+            setTimeout(() => {
+                if (!modalMap) {
+                        modalMap = L.map('modalMap').setView([occurrence.latitude || 30.3165, occurrence.longitude || 78.0322], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(modalMap);
+                    } else {
+                        modalMap.setView([occurrence.latitude || 30.3165, occurrence.longitude || 78.0322], 13);
+                }
+
+                modalMap.invalidateSize();
+
+                    // Add marker for the occurrence location
+                    if (modalMap._occurrenceMarker) {
+                        modalMap.removeLayer(modalMap._occurrenceMarker);
+                    }
+                    if (occurrence.latitude && occurrence.longitude) {
+                    modalMap._occurrenceMarker = L.marker([occurrence.latitude, occurrence.longitude]).addTo(modalMap);
+                }
+            }, 100);
+            } catch (error) {
+                console.error('Error showing occurrence details:', error);
+                alert('Error showing occurrence details. Please try again.');
+            }
+        }
+
+        function closeOccurrenceModal() {
+            const modal = document.getElementById('occurrenceModal');
+            modal.classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('occurrenceModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeOccurrenceModal();
+            }
+        });
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'N/A';
+                
+                const options = { 
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return date.toLocaleDateString('en-US', options);
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'N/A';
             }
         }
 
@@ -1661,12 +1773,10 @@
             }
         }
 
-        async function showEmergencyContacts(button) {
-            const occurrenceCard = button.closest('div');
-            const district = currentDistrict ? currentDistrict.name : 'Tehri Garhwal'; // Default to Tehri Garhwal if no district selected
-            
+        async function loadEmergencyContacts() {
+            console.log('Loading emergency contacts...');
             try {
-                const response = await fetch(`/api/emergency-contacts/district/${encodeURIComponent(district)}`, {
+                const response = await fetch(`${config.apiBaseUrl}/api/emergency-contacts`, {
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                     }
@@ -1677,90 +1787,72 @@
                 }
                 
                 const contacts = await response.json();
-                // Show all contacts regardless of active status since they were added by admin
+                console.log('Fetched contacts:', contacts);
                 
-                const contactsList = document.getElementById('emergencyContactsList');
-                
-                if (contacts.length === 0) {
-                    contactsList.innerHTML = `
-                        <div class="text-center py-4 text-gray-500">
-                            No emergency contacts found for this area
+                // Create and show the emergency contacts modal
+                const emergencyModal = document.createElement('div');
+                emergencyModal.className = 'emergency-contacts-modal';
+                emergencyModal.innerHTML = `
+                    <div class="modal-content bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl m-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">Emergency Contacts (Aapda Mitra)</h3>
+                            <button onclick="this.closest('.emergency-contacts-modal').remove()" class="text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                    `;
-                } else {
-                    contactsList.innerHTML = contacts.map(contact => `
-                        <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="space-y-4 max-h-[70vh] overflow-y-auto">
+                            ${contacts.length === 0 ? `
+                        <div class="text-center py-4 text-gray-500">
+                                    <p>No emergency contacts found</p>
+                                    <p class="text-sm mt-2">Add emergency contacts from the Emergency Contacts section</p>
+                        </div>
+                            ` : `
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    ${contacts.map(contact => `
+                                        <div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div class="flex justify-between items-start">
-                                <div>
-                                    <h4 class="font-semibold">${contact.name}</h4>
-                                    <p class="text-sm text-gray-600">${contact.designation}</p>
-                                    <p class="text-sm text-gray-600">${contact.department}</p>
-                                    <p class="text-sm text-gray-600">${contact.district} - ${contact.area}</p>
-                                    <p class="text-sm text-gray-600">${contact.phoneNumber}</p>
+                                                <div class="space-y-1">
+                                                    <h4 class="font-semibold text-lg">${contact.name}</h4>
+                                                    <p class="text-gray-600">
+                                                        <i class="fas fa-user-tie mr-2"></i>${contact.designation}
+                                                    </p>
+                                                    <p class="text-gray-600">
+                                                        <i class="fas fa-building mr-2"></i>${contact.department}
+                                                    </p>
+                                                    <p class="text-gray-600">
+                                                        <i class="fas fa-map-marker-alt mr-2"></i>${contact.district} - ${contact.area}
+                                                    </p>
+                                                    <p class="text-gray-600">
+                                                        <i class="fas fa-phone mr-2"></i>${contact.phoneNumber}
+                                                    </p>
                                 </div>
-                                <a href="tel:${contact.phoneNumber}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-                                    <i class="fas fa-phone-alt mr-2"></i>Call
+                                                <a href="tel:${contact.phoneNumber}" 
+                                                   class="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600 transition-colors flex items-center gap-2">
+                                                    <i class="fas fa-phone-alt"></i>
+                                                    <span>Call</span>
                                 </a>
                             </div>
                         </div>
-                    `).join('');
-                }
+                                    `).join('')}
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                `;
                 
-                document.getElementById('emergencyContactsModal').classList.remove('hidden');
-                document.getElementById('emergencyContactsModal').classList.add('flex');
+                document.body.appendChild(emergencyModal);
+                
+                // Add click event to close modal when clicking outside
+                emergencyModal.addEventListener('click', (e) => {
+                    if (e.target === emergencyModal) {
+                        emergencyModal.remove();
+                    }
+                });
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error loading emergency contacts:', error);
                 alert('Error loading emergency contacts: ' + error.message);
             }
         }
-
-        function closeEmergencyContactsModal() {
-            document.getElementById('emergencyContactsModal').classList.add('hidden');
-            document.getElementById('emergencyContactsModal').classList.remove('flex');
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('emergencyContactsModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEmergencyContactsModal();
-            }
-        });
-
-        // Prevent modal content clicks from closing the modal
-        document.querySelector('#emergencyContactsModal > div').addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-
-        // Add event listeners for filters
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners for filters when they exist
-            const statusFilter = document.getElementById('statusFilter');
-            const sortOrder = document.getElementById('sortOrder');
-            
-            if (statusFilter) {
-                statusFilter.addEventListener('change', loadOccurrences);
-            }
-            
-            if (sortOrder) {
-                sortOrder.addEventListener('change', loadOccurrences);
-            }
-        });
-
-        // Update the navigation click handlers
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add Markers link
-            document.querySelector('a[href="admin.html"]').addEventListener('click', function(e) {
-                e.preventDefault();
-                showSection('add-markers');
-            });
-
-            // Manage Occurrences link
-            document.querySelector('a[href="#"]').addEventListener('click', function(e) {
-                e.preventDefault();
-                showSection('manage-occurrences');
-                loadOccurrences();
-            });
-        });
 
         // Update section visibility management
         function showSection(sectionId) {

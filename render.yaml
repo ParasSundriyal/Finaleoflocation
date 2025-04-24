@@ -5,7 +5,9 @@ services:
     plan: free
     region: singapore
     branch: main
-    healthCheckPath: /actuator/health
+    healthCheckPath: /
+    healthCheckTimeout: 100
+    autoDeploy: true
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
@@ -16,4 +18,4 @@ services:
       - key: PORT
         value: 8080
     buildCommand: "./mvnw clean package -DskipTests"
-    startCommand: "java -jar target/*.jar" 
+    startCommand: "java -Xmx512m -jar target/*.jar" 

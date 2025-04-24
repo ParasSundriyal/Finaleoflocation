@@ -42,6 +42,7 @@ public class SecurityConfig {
                 "/index.html", 
                 "/login.html", 
                 "/signup.html",
+                "/occurrence.html",
                 "/css/**", 
                 "/js/**", 
                 "/static/**",
@@ -85,10 +86,18 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:8080",
+            "http://localhost:3000",
             "https://tehrilocationmapping.onrender.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Auth-Token"));
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization", 
+            "Content-Type", 
+            "X-Auth-Token",
+            "X-Requested-With",
+            "Accept",
+            "Origin"
+        ));
         configuration.setExposedHeaders(Arrays.asList("X-Auth-Token"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

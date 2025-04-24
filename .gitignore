@@ -32,6 +32,13 @@ build/
 ### VS Code ###
 .vscode/
 
+### Application specific ###
+/uploads/
+application-local.properties
+*.log
+node_modules/
+.env
+
 ### Application Properties ###
 **/application.properties
 **/application-*.properties

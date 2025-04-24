@@ -1144,9 +1144,6 @@
             
             title.textContent = occurrence.title || 'Occurrence Details';
             
-            const reportedDate = occurrence.reportedAt ? new Date(occurrence.reportedAt).toLocaleString() : 'Not available';
-            const verifiedDate = occurrence.verifiedAt ? new Date(occurrence.verifiedAt).toLocaleString() : 'Not verified';
-            
             content.innerHTML = `
                 <div class="space-y-6" data-occurrence-id="${occurrence.id}">
                     <div class="space-y-4">
@@ -1169,7 +1166,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-sm font-medium text-gray-500">Reported At</label>
-                                <p class="mt-1 text-gray-900">${reportedDate}</p>
+                                <p class="mt-1 text-gray-900">${formatDate(occurrence.reportedAt)}</p>
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-gray-500">Status</label>
@@ -1184,6 +1181,19 @@
                                 </p>
                             </div>
                         </div>
+
+                        ${occurrence.verifiedBy ? `
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-500">Verified By</label>
+                                    <p class="mt-1 text-gray-900">${occurrence.verifiedBy}</p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-500">Verified At</label>
+                                    <p class="mt-1 text-gray-900">${formatDate(occurrence.verifiedAt)}</p>
+                                </div>
+                            </div>
+                        ` : ''}
 
                         <div class="space-y-2">
                             <label class="text-sm font-medium text-gray-500">Verification Notes</label>
@@ -1280,6 +1290,26 @@
             }
         });
 
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'N/A';
+                
+                const options = { 
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                };
+                return date.toLocaleDateString('en-US', options);
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'N/A';
+            }
+        }
+
         async function loadOccurrences() {
             try {
                 const response = await fetch('/api/occurrences', {
@@ -1329,9 +1359,6 @@
                 }
                 
                 filteredOccurrences.forEach(occurrence => {
-                    const reportedDate = occurrence.reportedAt ? 
-                        new Date(occurrence.reportedAt).toLocaleString() : 'Not available';
-                    
                     const card = document.createElement('div');
                     card.className = 'bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200';
                     card.setAttribute('data-occurrence-id', occurrence.id);
@@ -1346,7 +1373,7 @@
                                     ${occurrence.status || 'PENDING'}
                                 </span>
                                 <span class="text-sm text-gray-500">
-                                    <i class="far fa-clock mr-1"></i>${new Date(reportedDate).toLocaleDateString()}
+                                    <i class="far fa-clock mr-1"></i>${formatDate(occurrence.reportedAt)}
                                 </span>
                             </div>
                             
@@ -1354,22 +1381,15 @@
                             <p class="text-gray-600 text-sm mb-3 line-clamp-2">${occurrence.description || 'No description available'}</p>
                             
                             <div class="flex items-center justify-between">
-                                <div class="flex items-center text-gray-500 text-sm">
-                                    <i class="far fa-user mr-1"></i>
-                                    <span class="line-clamp-1">${occurrence.reporterName || 'Anonymous'}</span>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="far fa-user mr-2"></i>
+                                    <span>${occurrence.reporterName || 'Anonymous'}</span>
                                 </div>
-                                ${occurrence.photoIds?.length ? `
-                                    <span class="text-blue-600">
-                                        <i class="fas fa-camera"></i> ${occurrence.photoIds.length}
-                                    </span>
-                                ` : ''}
+                                <button onclick="showOccurrenceDetails(${JSON.stringify(occurrence).replace(/"/g, '&quot;')})" 
+                                        class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                    View Details <i class="fas fa-chevron-right ml-1"></i>
+                                </button>
                             </div>
-                        </div>
-                        <div class="border-t px-3 sm:px-4 py-3">
-                            <button onclick="showOccurrenceDetails(${JSON.stringify(occurrence).replace(/"/g, '&quot;')})" 
-                                    class="w-full text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center justify-center">
-                                View Details <i class="fas fa-chevron-right ml-2"></i>
-                            </button>
                         </div>
                     `;
                     occurrencesList.appendChild(card);

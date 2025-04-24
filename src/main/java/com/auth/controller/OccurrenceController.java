@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -19,7 +21,9 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/occurrences")
+@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:3000", "https://tehrilocationmapping.onrender.com"}, allowCredentials = "true")
 public class OccurrenceController {
+    private static final Logger logger = LoggerFactory.getLogger(OccurrenceController.class);
 
     @Autowired
     private OccurrenceService occurrenceService;
@@ -35,29 +39,46 @@ public class OccurrenceController {
             @RequestPart(value = "occurrence") String occurrenceJson,
             @RequestPart(value = "photos", required = false) List<MultipartFile> photos) {
         try {
+            logger.info("Received occurrence creation request");
+            logger.debug("Occurrence JSON: {}", occurrenceJson);
+            
             ObjectMapper mapper = new ObjectMapper();
             mapper.findAndRegisterModules(); // This helps with LocalDateTime serialization
             Occurrence occurrence = mapper.readValue(occurrenceJson, Occurrence.class);
             
             // Validate required fields
             if (occurrence.getTitle() == null || occurrence.getTitle().trim().isEmpty()) {
+                logger.warn("Title is required");
                 return ResponseEntity.badRequest()
                     .body(Map.of("message", "Title is required"));
             }
             
             if (occurrence.getDescription() == null || occurrence.getDescription().trim().isEmpty()) {
+                logger.warn("Description is required");
                 return ResponseEntity.badRequest()
                     .body(Map.of("message", "Description is required"));
             }
             
             if (occurrence.getLatitude() == 0 || occurrence.getLongitude() == 0) {
+                logger.warn("Location coordinates are required");
                 return ResponseEntity.badRequest()
                     .body(Map.of("message", "Location coordinates are required"));
             }
 
             if (photos == null || photos.isEmpty()) {
+                logger.warn("At least one photo is required");
                 return ResponseEntity.badRequest()
                     .body(Map.of("message", "At least one photo is required"));
+            }
+
+            // Validate photo types
+            for (MultipartFile photo : photos) {
+                String contentType = photo.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    logger.warn("Invalid file type: {}", contentType);
+                    return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Only image files are allowed"));
+                }
             }
             
             // Set default values
@@ -67,11 +88,14 @@ public class OccurrenceController {
             occurrence.setActiveOnMap(false); // Initially set to false until verified
             
             // Create the occurrence
+            logger.info("Creating occurrence with title: {}", occurrence.getTitle());
             Occurrence savedOccurrence = occurrenceService.createOccurrence(occurrence, photos);
+            logger.info("Occurrence created successfully with ID: {}", savedOccurrence.getId());
+            
             return ResponseEntity.ok(savedOccurrence);
             
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error creating occurrence", e);
             String errorMessage = e.getMessage();
             if (errorMessage == null || errorMessage.isEmpty()) {
                 errorMessage = "An unexpected error occurred while creating the occurrence";

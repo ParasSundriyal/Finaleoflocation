@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aapda Mitr - Emergency Services</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .emergency-card {
+            transition: all 0.3s ease;
+        }
+        .emergency-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .call-button {
+            transition: all 0.3s ease;
+        }
+        .call-button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-gray-800">TehriMap</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-800">
+                        <i class="fas fa-home mr-2"></i>Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">Aapda Mitr / आपदा मित्र</h1>
+            <p class="text-xl text-white opacity-90">Emergency Services / आपातकालीन सेवाएं</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <!-- Police Emergency -->
+            <div class="emergency-card bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4">
+                        <i class="fas fa-shield-alt text-3xl text-blue-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Police / पुलिस</h2>
+                    <p class="text-gray-600 text-center mb-4">For law enforcement emergencies</p>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-blue-600 mb-4">112</p>
+                        <button onclick="initiateCall('112')" class="call-button bg-blue-600 text-white px-6 py-3 rounded-full inline-flex items-center justify-center w-full hover:bg-blue-700">
+                            <i class="fas fa-phone-alt mr-2"></i>
+                            Call Police / पुलिस को कॉल करें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Emergency -->
+            <div class="emergency-card bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mx-auto mb-4">
+                        <i class="fas fa-ambulance text-3xl text-red-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Ambulance / एम्बुलेंस</h2>
+                    <p class="text-gray-600 text-center mb-4">For medical emergencies</p>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-red-600 mb-4">108</p>
+                        <button onclick="initiateCall('108')" class="call-button bg-red-600 text-white px-6 py-3 rounded-full inline-flex items-center justify-center w-full hover:bg-red-700">
+                            <i class="fas fa-phone-alt mr-2"></i>
+                            Call Ambulance / एम्बुलेंस को कॉल करें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fire Brigade -->
+            <div class="emergency-card bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mx-auto mb-4">
+                        <i class="fas fa-fire-extinguisher text-3xl text-orange-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Fire Brigade / दमकल</h2>
+                    <p class="text-gray-600 text-center mb-4">For fire emergencies</p>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-orange-600 mb-4">101</p>
+                        <button onclick="initiateCall('101')" class="call-button bg-orange-600 text-white px-6 py-3 rounded-full inline-flex items-center justify-center w-full hover:bg-orange-700">
+                            <i class="fas fa-phone-alt mr-2"></i>
+                            Call Fire Brigade / दमकल को कॉल करें
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Disaster Management -->
+            <div class="emergency-card bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto mb-4">
+                        <i class="fas fa-house-damage text-3xl text-green-600"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Disaster Management / आपदा प्रबंधन</h2>
+                    <p class="text-gray-600 text-center mb-4">For disaster-related emergencies</p>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-green-600 mb-4">1070</p>
+                        <button onclick="initiateCall('1070')" class="call-button bg-green-600 text-white px-6 py-3 rounded-full inline-flex items-center justify-center w-full hover:bg-green-700">
+                            <i class="fas fa-phone-alt mr-2"></i>
+                            Call Disaster Management / आपदा प्रबंधन को कॉल करें
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function initiateCall(number) {
+            const confirmCall = window.confirm(`Do you want to call ${number}?\nक्या आप ${number} पर कॉल करना चाहते हैं?`);
+            if (confirmCall) {
+                window.location.href = `tel:${number}`;
+            }
+        }
+    </script>
+</body>
+</html> 

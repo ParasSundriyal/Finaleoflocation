@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Contacts - TehriMap</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .contact-card {
+            transition: all 0.3s ease;
+        }
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        #contactModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        #contactModal.show {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-blue-900 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <a href="/" class="text-xl font-bold text-white">TehriMap</a>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="/admin.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">
+                            Add Markers
+                        </a>
+                        <a href="/manage-markers.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">
+                            Manage Markers
+                        </a>
+                        <a href="/emergency-contacts.html" class="text-white bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+                            Emergency Contacts
+                        </a>
+                        <a href="#" onclick="showOccurrenceSection()" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">
+                            Manage Occurrences
+                        </a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="logoutBtn" class="text-red-400 hover:text-red-300 px-3 py-2 rounded-md text-sm font-medium">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Emergency Contacts</h1>
+            <button onclick="showAddContactModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                <i class="fas fa-plus mr-2"></i>Add Contact
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white p-4 rounded-lg shadow mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">District</label>
+                    <select id="districtFilter" class="w-full p-2 border rounded-md">
+                        <option value="">All Districts</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                    <select id="departmentFilter" class="w-full p-2 border rounded-md">
+                        <option value="">All Departments</option>
+                        <option value="Police">Police</option>
+                        <option value="Fire">Fire</option>
+                        <option value="Medical">Medical</option>
+                        <option value="Disaster">Disaster Management</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select id="statusFilter" class="w-full p-2 border rounded-md">
+                        <option value="">All Status</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contacts List -->
+        <div id="contactsList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Contacts will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Contact Modal -->
+    <div id="contactModal">
+        <div class="modal-content">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 id="modalTitle" class="text-xl font-bold">Add Emergency Contact</h3>
+                    <button onclick="closeContactModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="contactForm" class="space-y-4">
+                    <input type="hidden" id="contactId">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <input type="text" id="contactName" class="w-full p-2 border rounded-md" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Designation</label>
+                        <input type="text" id="contactDesignation" class="w-full p-2 border rounded-md" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input type="tel" id="contactPhone" class="w-full p-2 border rounded-md" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                        <select id="contactDepartment" class="w-full p-2 border rounded-md" required>
+                            <option value="Police">Police</option>
+                            <option value="Fire">Fire</option>
+                            <option value="Medical">Medical</option>
+                            <option value="Disaster">Disaster Management</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">District</label>
+                        <select id="contactDistrict" class="w-full p-2 border rounded-md" required>
+                            <!-- Districts will be loaded here -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Area</label>
+                        <input type="text" id="contactArea" class="w-full p-2 border rounded-md" required>
+                    </div>
+                    <div class="flex justify-end space-x-2 pt-4">
+                        <button type="button" onclick="closeContactModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        // Uttarakhand districts data
+        const uttarakhandDistricts = [
+            { name: "Tehri Garhwal", lat: 30.3753, lng: 78.4337 },
+            { name: "Dehradun", lat: 30.3165, lng: 78.0322 },
+            { name: "Haridwar", lat: 29.9457, lng: 78.1642 },
+            { name: "Pauri Garhwal", lat: 30.1469, lng: 78.7808 },
+            { name: "Rudraprayag", lat: 30.2844, lng: 78.9811 },
+            { name: "Chamoli", lat: 30.4227, lng: 79.3286 },
+            { name: "Pithoragarh", lat: 29.5828, lng: 80.2181 },
+            { name: "Almora", lat: 29.5892, lng: 79.6467 },
+            { name: "Nainital", lat: 29.3919, lng: 79.4542 },
+            { name: "Udham Singh Nagar", lat: 28.9610, lng: 79.5152 },
+            { name: "Champawat", lat: 29.3362, lng: 80.0911 },
+            { name: "Bageshwar", lat: 29.8362, lng: 79.7713 },
+            { name: "Uttarkashi", lat: 30.7268, lng: 78.4354 }
+        ];
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Load districts
+            loadDistricts();
+            
+            // Load contacts
+            loadContacts();
+            
+            // Setup event listeners
+            document.getElementById('addContactBtn').addEventListener('click', showAddContactModal);
+            document.getElementById('contactForm').addEventListener('submit', handleContactSubmit);
+            document.getElementById('districtFilter').addEventListener('change', loadContacts);
+            document.getElementById('departmentFilter').addEventListener('change', loadContacts);
+            document.getElementById('statusFilter').addEventListener('change', loadContacts);
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+        });
+
+        function loadDistricts() {
+            const districtFilter = document.getElementById('districtFilter');
+            const contactDistrict = document.getElementById('contactDistrict');
+            
+            // Clear existing options
+            districtFilter.innerHTML = '<option value="">All Districts</option>';
+            contactDistrict.innerHTML = '';
+            
+            // Get admin's district from session storage
+            const adminDistrict = sessionStorage.getItem('adminDistrict');
+            
+            // Populate district dropdowns
+            uttarakhandDistricts.forEach(district => {
+                const option = document.createElement('option');
+                option.value = district.name;
+                option.textContent = district.name;
+                
+                // Only show admin's district in the contact form if they are district-restricted
+                if (!adminDistrict || district.name === adminDistrict) {
+                    contactDistrict.appendChild(option.cloneNode(true));
+                }
+                
+                // Show all districts in the filter
+                districtFilter.appendChild(option.cloneNode(true));
+            });
+            
+            // If admin has a specific district, set it as default
+            if (adminDistrict) {
+                districtFilter.value = adminDistrict;
+                contactDistrict.value = adminDistrict;
+            }
+        }
+
+        async function loadContacts() {
+            try {
+                const districtFilter = document.getElementById('districtFilter').value;
+                const departmentFilter = document.getElementById('departmentFilter').value;
+                const statusFilter = document.getElementById('statusFilter').value;
+                
+                let url = '/api/emergency-contacts';
+                if (districtFilter) {
+                    url += `/district/${encodeURIComponent(districtFilter)}`;
+                }
+                
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load contacts');
+                }
+                
+                let contacts = await response.json();
+                
+                // Apply filters
+                if (departmentFilter) {
+                    contacts = contacts.filter(contact => contact.department === departmentFilter);
+                }
+                
+                if (statusFilter !== '') {
+                    const isActive = statusFilter === 'true';
+                    contacts = contacts.filter(contact => contact.isActive === isActive);
+                }
+                
+                displayContacts(contacts);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading contacts: ' + error.message);
+            }
+        }
+
+        function displayContacts(contacts) {
+            const contactsList = document.getElementById('contactsList');
+            
+            if (contacts.length === 0) {
+                contactsList.innerHTML = `
+                    <div class="col-span-full text-center py-8 text-gray-500">
+                        No contacts found
+                    </div>
+                `;
+                return;
+            }
+            
+            contactsList.innerHTML = contacts.map(contact => `
+                <div class="contact-card bg-white rounded-lg shadow p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-lg font-semibold">${contact.name}</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            contact.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }">
+                            ${contact.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-1">${contact.designation}</p>
+                    <p class="text-gray-600 text-sm mb-1">${contact.department}</p>
+                    <p class="text-gray-600 text-sm mb-1">${contact.district} - ${contact.area}</p>
+                    <div class="flex items-center mt-2">
+                        <a href="tel:${contact.phoneNumber}" class="text-indigo-600 hover:text-indigo-800 mr-2">
+                            <i class="fas fa-phone-alt"></i>
+                        </a>
+                        <span class="text-gray-600">${contact.phoneNumber}</span>
+                    </div>
+                    <div class="flex justify-end mt-4 space-x-2">
+                        <button onclick="editContact('${contact.id}')" class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="toggleContactStatus('${contact.id}')" class="text-yellow-600 hover:text-yellow-800">
+                            <i class="fas fa-toggle-on"></i>
+                        </button>
+                        <button onclick="deleteContact('${contact.id}')" class="text-red-600 hover:text-red-800">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showAddContactModal() {
+            document.getElementById('modalTitle').textContent = 'Add Emergency Contact';
+            document.getElementById('contactId').value = '';
+            document.getElementById('contactForm').reset();
+            document.getElementById('contactModal').classList.add('show');
+        }
+
+        function closeContactModal() {
+            document.getElementById('contactModal').classList.remove('show');
+            document.getElementById('contactForm').reset();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('contactModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeContactModal();
+            }
+        });
+
+        // Prevent form clicks from closing the modal
+        document.querySelector('#contactModal .modal-content').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        // Handle form submission
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const contactData = {
+                name: document.getElementById('contactName').value,
+                designation: document.getElementById('contactDesignation').value,
+                phoneNumber: document.getElementById('contactPhone').value,
+                department: document.getElementById('contactDepartment').value,
+                district: document.getElementById('contactDistrict').value,
+                area: document.getElementById('contactArea').value,
+                addedBy: sessionStorage.getItem('userId')
+            };
+
+            const id = document.getElementById('contactId').value;
+            
+            try {
+                const url = id ? `/api/emergency-contacts/${id}` : '/api/emergency-contacts';
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(contactData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to save contact');
+                }
+                
+                // Show success message
+                alert(id ? 'Contact updated successfully!' : 'Contact added successfully!');
+                
+                // Close modal and reset form
+                closeContactModal();
+                
+                // Reload contacts list
+                loadContacts();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving contact: ' + error.message);
+            }
+        });
+
+        async function editContact(id) {
+            try {
+                const response = await fetch(`/api/emergency-contacts/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load contact');
+                }
+                
+                const contact = await response.json();
+                
+                document.getElementById('modalTitle').textContent = 'Edit Emergency Contact';
+                document.getElementById('contactId').value = id;
+                document.getElementById('contactName').value = contact.name;
+                document.getElementById('contactDesignation').value = contact.designation;
+                document.getElementById('contactPhone').value = contact.phoneNumber;
+                document.getElementById('contactDepartment').value = contact.department;
+                document.getElementById('contactDistrict').value = contact.district;
+                document.getElementById('contactArea').value = contact.area;
+                
+                // If admin is district-restricted, disable district field
+                const adminDistrict = sessionStorage.getItem('adminDistrict');
+                const districtField = document.getElementById('contactDistrict');
+                if (adminDistrict) {
+                    districtField.disabled = true;
+                }
+                
+                document.getElementById('contactModal').classList.add('show');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading contact: ' + error.message);
+            }
+        }
+
+        async function toggleContactStatus(id) {
+            try {
+                const response = await fetch(`/api/emergency-contacts/${id}/toggle`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to toggle contact status');
+                }
+                
+                loadContacts();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error toggling contact status: ' + error.message);
+            }
+        }
+
+        async function deleteContact(id) {
+            if (!confirm('Are you sure you want to delete this contact?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/emergency-contacts/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete contact');
+                }
+                
+                loadContacts();
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error deleting contact: ' + error.message);
+            }
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html> 

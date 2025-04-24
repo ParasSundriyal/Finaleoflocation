@@ -25,6 +25,7 @@
             height: calc(100vh - 200px);
             width: 100%;
             border-radius: 0.5rem;
+            z-index: 1;
         }
         @media (max-width: 768px) {
             #map {
@@ -69,6 +70,159 @@
             width: 100%;
             max-width: 400px;
         }
+        .photo-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .photo-preview img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 0.375rem;
+        }
+        .camera-modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20000;
+        }
+        .camera-modal-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            width: 100%;
+            max-width: 32rem;
+            margin: 1rem;
+            position: relative;
+        }
+        .camera-preview {
+            width: 100%;
+            height: 60vh;
+            max-height: 480px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            background: black;
+        }
+        .capture-button {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 9999px;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+        .capture-button:hover {
+            transform: translate(-50%, -2px);
+        }
+        .close-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: white;
+            border-radius: 9999px;
+            padding: 0.5rem;
+            z-index: 10;
+            transition: background-color 0.2s;
+        }
+        .close-button:hover {
+            background-color: #f3f4f6;
+        }
+        #occurrenceModal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 10000;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        #occurrenceModal.flex {
+            display: flex;
+        }
+        #occurrenceModal .modal-content {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 64rem;
+            margin: 1rem auto;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        #occurrenceModal form {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        #occurrenceModal .form-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        #occurrenceModal .form-footer {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+        }
+        #occurrenceMap {
+            height: 400px;
+            width: 100%;
+        }
+        .leaflet-container {
+            z-index: 1;
+        }
+        .leaflet-control {
+            z-index: 400;
+        }
+        .leaflet-popup {
+            z-index: 600;
+        }
+        nav {
+            position: relative;
+            z-index: 1000;
+        }
+        #occurrenceModal {
+            z-index: 1000;
+        }
+        
+        /* Add new styles for camera modal */
+        .camera-capture-modal {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000; /* Higher than occurrence modal */
+        }
+        
+        .camera-capture-content {
+            position: relative;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 640px;
+            margin: 1rem;
+        }
     </style>
 </head>
 <body class="gradient-bg min-h-screen">
@@ -85,6 +239,9 @@
                     </select>
                 </div>
                 <div class="flex items-center space-x-4">
+                    <button onclick="showOccurrenceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-plus-circle mr-2"></i>सूचना दर्ज करें
+                    </button>
                     <span id="username" class="text-gray-600"></span>
                     <button onclick="logout()" class="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
@@ -104,8 +261,9 @@
                 </div>
             </div>
 
+            <!-- Marker List and Report Section -->
+            <div class="col-span-1 space-y-6">
             <!-- Marker List -->
-            <div class="col-span-1">
                 <div class="bg-white rounded-lg shadow-lg p-6">
                     <h2 class="text-xl font-bold mb-4">Available Locations</h2>
                     <div class="marker-list" id="markerList">
@@ -116,11 +274,87 @@
         </div>
     </div>
 
+    <!-- Update the occurrence modal structure -->
+    <div id="occurrenceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+        <div class="relative top-5 mx-auto p-5 border w-full max-w-md bg-white shadow-lg rounded-md">
+            <div class="flex flex-col h-full">
+                <div class="flex justify-between items-center pb-3">
+                    <p class="text-2xl font-bold">Report Occurrence</p>
+                    <div class="cursor-pointer z-50" onclick="closeOccurrenceModal()">
+                        <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+                            <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <form id="occurrenceForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700">Title</label>
+                            <input type="text" id="title" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea id="description" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Your Name</label>
+                            <input type="text" id="reporterName" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" id="reporterPhone" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Location</label>
+                            <div id="locationStatus" class="mt-1 text-sm">
+                                <span class="text-blue-600">
+                                    <i class="fas fa-location-arrow mr-2"></i>Detecting your location...
+                                </span>
+                            </div>
+                            <input type="hidden" id="latitude" required>
+                            <input type="hidden" id="longitude" required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Photos</label>
+                            <div class="mt-1 flex items-center space-x-4">
+                                <button type="button" id="cameraButton" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <i class="fas fa-camera mr-2"></i>
+                                    Take Photo
+                                </button>
+                                <label class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
+                                    <i class="fas fa-upload mr-2"></i>
+                                    Upload Photos
+                                    <input type="file" id="photos" multiple accept="image/*" class="hidden">
+                                </label>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                            <div id="photoPreview" class="mt-2 grid grid-cols-4 gap-2"></div>
+                        </div>
+
+                        <div class="mt-5 flex justify-end">
+                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Submit Report
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Global variables
         let map;
         let markers = [];
+        let occurrenceMap = null;
+        let occurrenceMarker = null;
         const uttarakhandDistricts = [
             { name: "Tehri Garhwal", lat: 30.3753, lng: 78.4337 },
             { name: "Dehradun", lat: 30.3165, lng: 78.0322 },
@@ -284,14 +518,274 @@
 
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Content Loaded');
             const token = sessionStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
                 return;
             }
+            
+            // Add click handler programmatically
+            const reportButton = document.querySelector('button[onclick="showOccurrenceModal()"]');
+            if (reportButton) {
+                console.log('Report button found');
+                reportButton.addEventListener('click', function(e) {
+                    console.log('Button clicked');
+                    showOccurrenceModal();
+                });
+            } else {
+                console.log('Report button not found');
+            }
+            
             initMap();
             loadUserInfo();
         });
+
+        function initOccurrenceModal() {
+            // Get location as soon as the modal opens
+            getLocation();
+            
+            // Setup photo handlers
+            setupPhotoHandlers();
+            
+            // Setup form submission
+            document.getElementById('occurrenceForm').addEventListener('submit', handleOccurrenceSubmit);
+        }
+
+        function getLocation() {
+            const locationStatus = document.getElementById('locationStatus');
+            
+            if (!navigator.geolocation) {
+                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>Location detection is not supported by your browser</span>';
+                return;
+            }
+
+            function success(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
+                
+                locationStatus.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Location detected successfully</span>';
+            }
+
+            function error() {
+                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>Unable to detect location</span>';
+            }
+
+            navigator.geolocation.getCurrentPosition(success, error, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        }
+
+        function setupPhotoHandlers() {
+            const cameraButton = document.getElementById('cameraButton');
+            const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+            
+            if (hasGetUserMedia) {
+                cameraButton.addEventListener('click', handleCameraCapture);
+            } else {
+                cameraButton.addEventListener('click', fallbackToFileUpload);
+                cameraButton.innerHTML = '<i class="fas fa-upload mr-2"></i>Upload from Device';
+                cameraButton.title = 'Your device does not have camera access';
+            }
+
+            document.getElementById('photos').addEventListener('change', function(e) {
+                handlePhotos(e.target.files);
+            });
+        }
+
+        async function handleCameraCapture() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }
+                });
+
+                const videoEl = document.createElement('video');
+                videoEl.srcObject = stream;
+                videoEl.style.display = 'none';
+                document.body.appendChild(videoEl);
+
+                const captureModal = document.createElement('div');
+                captureModal.className = 'camera-capture-modal';
+                captureModal.innerHTML = `
+                    <div class="camera-capture-content">
+                        <video id="cameraPreview" class="w-full h-64 object-cover rounded-lg bg-black" autoplay playsinline></video>
+                        <button id="captureBtn" class="absolute bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full bg-white border-4 border-blue-500 focus:outline-none hover:bg-blue-50"></button>
+                        <button id="closeCamera" class="absolute top-2 right-2 text-white bg-red-500 rounded-full p-2 hover:bg-red-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                document.body.appendChild(captureModal);
+
+                const preview = document.getElementById('cameraPreview');
+                preview.srcObject = stream;
+                await preview.play();
+
+                document.getElementById('captureBtn').onclick = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = preview.videoWidth;
+                    canvas.height = preview.videoHeight;
+                    canvas.getContext('2d').drawImage(preview, 0, 0);
+                    
+                    canvas.toBlob((blob) => {
+                        const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+                        handlePhotos([file]);
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                        captureModal.remove();
+                        videoEl.remove();
+                    }, 'image/jpeg');
+                };
+
+                document.getElementById('closeCamera').onclick = () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    captureModal.remove();
+                    videoEl.remove();
+                };
+
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                fallbackToFileUpload();
+            }
+        }
+
+        function fallbackToFileUpload() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = true;
+            input.onchange = (e) => handlePhotos(e.target.files);
+            input.click();
+        }
+
+        let uploadedPhotos = [];
+
+        function handlePhotos(files) {
+            const preview = document.getElementById('photoPreview');
+            
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please upload only image files');
+                    return;
+                }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size should not exceed 10MB');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const container = document.createElement('div');
+                    container.className = 'relative';
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-full h-24 object-cover rounded-lg';
+                    container.appendChild(img);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.onclick = function() {
+                        container.remove();
+                        uploadedPhotos = uploadedPhotos.filter(p => p !== file);
+                    };
+                    container.appendChild(removeBtn);
+
+                    preview.appendChild(container);
+                }
+                reader.readAsDataURL(file);
+                uploadedPhotos.push(file);
+            });
+        }
+
+        async function handleOccurrenceSubmit(e) {
+            e.preventDefault();
+
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+
+            if (!latitude || !longitude) {
+                alert('Please wait for location detection or enable location services');
+                return;
+            }
+
+            if (uploadedPhotos.length === 0) {
+                alert('Please upload at least one photo');
+                return;
+            }
+
+            const formData = new FormData();
+            const occurrenceData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                reporterName: document.getElementById('reporterName').value,
+                reporterPhone: document.getElementById('reporterPhone').value,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
+                location: `${latitude}, ${longitude}`,
+                status: "PENDING",
+                activeOnMap: true,
+                reporterId: sessionStorage.getItem('userId') || 'anonymous'
+            };
+
+            const occurrenceBlob = new Blob([JSON.stringify(occurrenceData)], {
+                type: 'application/json'
+            });
+            formData.append('occurrence', occurrenceBlob);
+
+            uploadedPhotos.forEach((photo, index) => {
+                formData.append(`photos`, photo);
+            });
+
+            try {
+                const headers = {};
+                const token = sessionStorage.getItem('token');
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch('/api/occurrences', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to submit occurrence');
+                }
+
+                alert('Occurrence submitted successfully!');
+                closeOccurrenceModal();
+                loadMarkers(); // Refresh markers on the map
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'Failed to submit occurrence. Please try again.');
+            }
+        }
+
+        function showOccurrenceModal() {
+            console.log('Opening modal...');
+            const modal = document.getElementById('occurrenceModal');
+            modal.style.display = 'block';
+            initOccurrenceModal();
+        }
+
+        function closeOccurrenceModal() {
+            console.log('Closing modal...');
+            const modal = document.getElementById('occurrenceModal');
+            modal.style.display = 'none';
+            document.getElementById('occurrenceForm').reset();
+            document.getElementById('photoPreview').innerHTML = '';
+            uploadedPhotos = [];
+        }
     </script>
 </body>
 </html> 

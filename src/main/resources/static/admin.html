@@ -489,6 +489,7 @@
                 <div class="flex flex-col md:flex-row gap-4">
                     <a href="admin.html" class="text-white px-3 py-2 rounded-md text-sm font-medium bg-blue-600">Add Markers</a>
                     <a href="manage-markers.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">Manage Markers</a>
+                    <a href="emergency-contacts.html" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium">Emergency Contacts</a>
                     <a href="#" class="text-white hover:text-gray-300 px-3 py-2 rounded-md text-sm font-medium" onclick="showOccurrenceSection()">Manage Occurrences</a>
                 </div>
             </div>
@@ -1141,27 +1142,27 @@
             const title = document.getElementById('modalTitle');
             const content = document.getElementById('modalContent');
             
-            title.textContent = occurrence.title;
+            title.textContent = occurrence.title || 'Occurrence Details';
             
             const reportedDate = occurrence.reportedAt ? new Date(occurrence.reportedAt).toLocaleString() : 'Not available';
             const verifiedDate = occurrence.verifiedAt ? new Date(occurrence.verifiedAt).toLocaleString() : 'Not verified';
             
             content.innerHTML = `
-                <div class="space-y-6">
+                <div class="space-y-6" data-occurrence-id="${occurrence.id}">
                     <div class="space-y-4">
                         <div>
                             <label class="text-sm font-medium text-gray-500">Description</label>
-                            <p class="mt-1 text-gray-900">${occurrence.description}</p>
+                            <p class="mt-1 text-gray-900">${occurrence.description || 'No description available'}</p>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-sm font-medium text-gray-500">Reporter Name</label>
-                                <p class="mt-1 text-gray-900">${occurrence.reporterName}</p>
+                                <p class="mt-1 text-gray-900">${occurrence.reporterName || 'Anonymous'}</p>
                             </div>
                             <div>
                                 <label class="text-sm font-medium text-gray-500">Reporter Phone</label>
-                                <p class="mt-1 text-gray-900">${occurrence.reporterPhone}</p>
+                                <p class="mt-1 text-gray-900">${occurrence.reporterPhone || 'Not provided'}</p>
                             </div>
                         </div>
 
@@ -1178,24 +1179,11 @@
                                         occurrence.status === 'REJECTED' ? 'bg-red-100 text-red-800' : 
                                         'bg-yellow-100 text-yellow-800'
                                     }">
-                                        ${occurrence.status}
+                                        ${occurrence.status || 'PENDING'}
                                     </span>
                                 </p>
                             </div>
                         </div>
-
-                        ${occurrence.verifiedBy ? `
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-sm font-medium text-gray-500">Verified By</label>
-                                    <p class="mt-1 text-gray-900">${occurrence.verifiedBy}</p>
-                                </div>
-                                <div>
-                                    <label class="text-sm font-medium text-gray-500">Verified At</label>
-                                    <p class="mt-1 text-gray-900">${verifiedDate}</p>
-                                </div>
-                            </div>
-                        ` : ''}
 
                         <div class="space-y-2">
                             <label class="text-sm font-medium text-gray-500">Verification Notes</label>
@@ -1209,14 +1197,11 @@
                                 <div class="mt-2 grid grid-cols-2 gap-4">
                                     ${occurrence.photoIds.map((_, index) => `
                                         <div class="relative group">
-                                            <img src="/api/occurrences/${occurrence.id}/photos/${index}" 
+                                            <img src="${config.apiBaseUrl}/api/occurrences/${occurrence.id}/photos/${index}" 
                                                  alt="Occurrence photo" 
                                                  class="w-full h-40 object-cover rounded-lg cursor-pointer"
-                                                 onclick="showFullImage('/api/occurrences/${occurrence.id}/photos/${index}')"
+                                                 onclick="showFullImage('${config.apiBaseUrl}/api/occurrences/${occurrence.id}/photos/${index}')"
                                             />
-                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity rounded-lg flex items-center justify-center">
-                                                <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 text-2xl"></i>
-                                            </div>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -1225,13 +1210,18 @@
 
                         <div class="flex justify-between pt-4 border-t">
                             <div class="space-x-2">
-                                <button onclick="updateOccurrenceStatus('${occurrence.id}', 'VERIFIED')" 
-                                        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
-                                    <i class="fas fa-check mr-2"></i>Verify
-                                </button>
-                                <button onclick="updateOccurrenceStatus('${occurrence.id}', 'REJECTED')" 
-                                        class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
-                                    <i class="fas fa-times mr-2"></i>Reject
+                                ${occurrence.status !== 'VERIFIED' ? `
+                                    <button onclick="verifyOccurrence(this)" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                        <i class="fas fa-check"></i> Verify
+                                    </button>
+                                ` : ''}
+                                ${occurrence.status !== 'REJECTED' ? `
+                                    <button onclick="rejectOccurrence(this)" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                ` : ''}
+                                <button onclick="showEmergencyContacts(this)" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                    <i class="fas fa-phone-alt"></i> Aapda Mitr
                                 </button>
                             </div>
                         </div>
@@ -1265,18 +1255,9 @@
                         modalMap.removeLayer(modalMap._occurrenceMarker);
                     }
                     
-                    // Add new marker with custom icon
-                    modalMap._occurrenceMarker = L.marker([occurrence.latitude, occurrence.longitude], {
-                        icon: L.divIcon({
-                            className: 'custom-marker',
-                            html: '<i class="fas fa-map-marker-alt text-red-500 text-3xl"></i>',
-                            iconSize: [30, 30],
-                            iconAnchor: [15, 30]
-                        })
-                    }).addTo(modalMap);
-                    
-                    // Open popup with occurrence title
-                    modalMap._occurrenceMarker.bindPopup(occurrence.title).openPopup();
+                    // Add new marker
+                    modalMap._occurrenceMarker = L.marker([occurrence.latitude, occurrence.longitude]).addTo(modalMap);
+                    modalMap._occurrenceMarker.bindPopup(occurrence.title || 'Occurrence Location').openPopup();
                 }
             }, 100);
         }
@@ -1429,74 +1410,158 @@
             document.body.appendChild(modal);
         }
 
-        async function updateOccurrenceStatus(id, status) {
+        async function verifyOccurrence(button) {
             try {
-                const verificationNotes = document.getElementById('verificationNotes')?.value || '';
-                
-                if (status === 'REJECTED') {
-                    // Delete the occurrence if rejected
-                    const deleteResponse = await fetch(`/api/occurrences/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-                        }
-                    });
+                const modalContent = button.closest('.space-y-6');
+                const occurrenceId = modalContent.getAttribute('data-occurrence-id');
+                const verificationNotes = document.getElementById('verificationNotes').value;
 
-                    if (!deleteResponse.ok) {
-                        throw new Error('Failed to delete occurrence');
-                    }
-                } else {
-                    // Update status for non-rejected occurrences
-                    const response = await fetch(`/api/occurrences/${id}/status`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-                        },
-                        body: new URLSearchParams({
-                            status: status,
-                            verifiedBy: 'admin',
-                            verificationNotes: verificationNotes
-                        })
-                    });
+                if (!occurrenceId) {
+                    throw new Error('Occurrence ID not found');
+                }
 
-                    if (!response.ok) {
-                        throw new Error('Failed to update status');
-                    }
+                const response = await fetch(`${config.apiBaseUrl}/api/occurrences/${occurrenceId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    },
+                    body: new URLSearchParams({
+                        status: 'VERIFIED',
+                        verifiedBy: 'admin',
+                        verificationNotes: verificationNotes
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to verify occurrence');
                 }
 
                 // Close the modal
                 closeOccurrenceModal();
                 
-                // If rejected, animate and remove the card
-                if (status === 'REJECTED') {
-                    const card = document.querySelector(`[data-occurrence-id="${id}"]`);
-                    if (card) {
-                        card.style.transition = 'all 0.5s ease-out';
-                        card.style.transform = 'translateX(100%)';
-                        card.style.opacity = '0';
-                        setTimeout(() => {
-                            card.remove();
-                            // Check if no cards left
-                            const occurrencesList = document.getElementById('occurrenceList');
-                            if (occurrencesList.children.length === 0) {
-                                occurrencesList.innerHTML = `
-                                    <div class="col-span-full text-center py-8 text-gray-500">
-                                        No occurrences found
-                                    </div>
-                                `;
-                            }
-                        }, 500);
-                    }
-                } else {
-                    // For other status updates, just reload the list
-                    loadOccurrences();
-                }
+                // Reload occurrences
+                loadOccurrences();
+                
+                // Show success message
+                alert('Occurrence verified successfully');
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error updating occurrence status: ' + error.message);
+                alert('Error verifying occurrence: ' + error.message);
             }
         }
+
+        async function rejectOccurrence(button) {
+            try {
+                const modalContent = button.closest('.space-y-6');
+                const occurrenceId = modalContent.getAttribute('data-occurrence-id');
+                const verificationNotes = document.getElementById('verificationNotes').value;
+
+                if (!occurrenceId) {
+                    throw new Error('Occurrence ID not found');
+                }
+
+                if (!confirm('Are you sure you want to reject this occurrence? This action cannot be undone.')) {
+                    return;
+                }
+
+                // First delete the occurrence
+                const deleteResponse = await fetch(`${config.apiBaseUrl}/api/occurrences/${occurrenceId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+
+                if (!deleteResponse.ok) {
+                    const errorData = await deleteResponse.json();
+                    throw new Error(errorData.message || 'Failed to delete occurrence');
+                }
+
+                // Close the modal
+                closeOccurrenceModal();
+                
+                // Reload occurrences
+                loadOccurrences();
+                
+                // Show success message
+                alert('Occurrence rejected and deleted successfully');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error rejecting occurrence: ' + error.message);
+            }
+        }
+
+        async function showEmergencyContacts(button) {
+            const occurrenceCard = button.closest('div');
+            const district = currentDistrict ? currentDistrict.name : 'Tehri Garhwal'; // Default to Tehri Garhwal if no district selected
+            
+            try {
+                const response = await fetch(`/api/emergency-contacts/district/${encodeURIComponent(district)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load emergency contacts');
+                }
+                
+                const contacts = await response.json();
+                // Show all contacts regardless of active status since they were added by admin
+                
+                const contactsList = document.getElementById('emergencyContactsList');
+                
+                if (contacts.length === 0) {
+                    contactsList.innerHTML = `
+                        <div class="text-center py-4 text-gray-500">
+                            No emergency contacts found for this area
+                        </div>
+                    `;
+                } else {
+                    contactsList.innerHTML = contacts.map(contact => `
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold">${contact.name}</h4>
+                                    <p class="text-sm text-gray-600">${contact.designation}</p>
+                                    <p class="text-sm text-gray-600">${contact.department}</p>
+                                    <p class="text-sm text-gray-600">${contact.district} - ${contact.area}</p>
+                                    <p class="text-sm text-gray-600">${contact.phoneNumber}</p>
+                                </div>
+                                <a href="tel:${contact.phoneNumber}" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                                    <i class="fas fa-phone-alt mr-2"></i>Call
+                                </a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('emergencyContactsModal').classList.remove('hidden');
+                document.getElementById('emergencyContactsModal').classList.add('flex');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading emergency contacts: ' + error.message);
+            }
+        }
+
+        function closeEmergencyContactsModal() {
+            document.getElementById('emergencyContactsModal').classList.add('hidden');
+            document.getElementById('emergencyContactsModal').classList.remove('flex');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('emergencyContactsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEmergencyContactsModal();
+            }
+        });
+
+        // Prevent modal content clicks from closing the modal
+        document.querySelector('#emergencyContactsModal > div').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
 
         function showOccurrenceSection() {
             // Hide the map and marker form sections
@@ -1524,5 +1589,20 @@
             }
         });
     </script>
+
+    <!-- Emergency Contacts Modal -->
+    <div id="emergencyContactsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Emergency Contacts</h3>
+                <button onclick="closeEmergencyContactsModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="emergencyContactsList" class="space-y-4 max-h-96 overflow-y-auto">
+                <!-- Contacts will be loaded here -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>

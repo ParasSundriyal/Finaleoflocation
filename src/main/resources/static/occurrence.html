@@ -3,186 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Occurrence - TehriMap</title>
+    <title>सूचना दर्ज करें - TehriMap</title>
     <!-- Tailwind CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
           integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
           crossorigin=""/>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        #map {
-            height: 400px;
-            width: 100%;
-            border-radius: 0.5rem;
-            z-index: 1;
+        :root {
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
         }
-        .photo-preview {
+        
+        body {
+            background: linear-gradient(135deg, #1a365d 0%, #2563eb 100%);
+            background-image: 
+                linear-gradient(135deg, rgba(26, 54, 93, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%),
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            min-height: 100vh;
+            margin: 0;
+            padding: 8px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.05'/%3E%3C/svg%3E");
+            z-index: 0;
+        }
+
+        #map {
+            height: 300px;
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0.5rem auto;
+            position: relative;
+            z-index: 1;
+            border: 1px solid #000;
+        }
+
+        .field-container {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            margin-bottom: 0.75rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.2px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid #000;
+            border-radius: 3px;
+            background: #fff;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+            min-height: 32px;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.input-field {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .map-container {
+            border: 1px solid #000;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.75rem;
+        }
+
+        .photo-upload-box {
+            border: none;
+            border-radius: 0;
+            padding: 0.5rem 0;
+            text-align: center;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .photo-upload-box:hover {
+            background: transparent;
+        }
+
+        .photo-upload-box i {
+            color: #2563eb;
+            margin-bottom: 0.25rem;
+        }
+
+        .photo-upload-box p {
+            color: #2563eb;
+            margin: 0;
+        }
+
+        .photo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
-        .photo-preview img {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 0.375rem;
+
+        .photo-preview {
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+            aspect-ratio: 1;
         }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .submit-button {
+            background: #000;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            border: 1px solid #000;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 0.75rem;
+            box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+            min-height: 36px;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .submit-button:active {
+            transform: translateY(0);
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #000;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
         .camera-modal {
             position: fixed;
             inset: 0;
-            background-color: rgba(0, 0, 0, 0.75);
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
         }
+
         .camera-modal-content {
             background: white;
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 0.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             width: 100%;
-            max-width: 32rem;
-            margin: 1rem;
-            position: relative;
+            max-width: 28rem;
+            margin: 0.75rem;
         }
+
         .camera-preview {
             width: 100%;
-            height: 60vh;
-            max-height: 480px;
+            height: 50vh;
+            max-height: 350px;
             object-fit: cover;
             border-radius: 0.5rem;
             background: black;
         }
+
         .capture-button {
             position: absolute;
-            bottom: 1rem;
+            bottom: 1.5rem;
             left: 50%;
             transform: translateX(-50%);
             background: white;
             border-radius: 9999px;
-            padding: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: transform 0.2s;
+            padding: 0.75rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s;
         }
+
         .capture-button:hover {
             transform: translate(-50%, -2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
         }
+
         .close-button {
             position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
+            top: 0.75rem;
+            right: 0.75rem;
             background: white;
             border-radius: 9999px;
-            padding: 0.5rem;
-            z-index: 10;
-            transition: background-color 0.2s;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
         }
+
         .close-button:hover {
-            background-color: #f3f4f6;
+            background-color: #F3F4F6;
+            transform: scale(1.1);
+        }
+
+        /* Update heading size */
+        h1.text-3xl {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Make grid more compact */
+        .grid.grid-cols-1.lg\:grid-cols-2.gap-8 {
+            gap: 0.75rem;
+        }
+
+        .space-y-8 {
+            margin-top: 0.25rem;
+        }
+
+        /* Adjust spacing in form */
+        .space-y-6 {
+            margin-top: 0.25rem;
+        }
+
+        /* Make icons smaller */
+        .fas {
+            font-size: 1.25rem !important;
+        }
+
+        /* Adjust text sizes */
+        .text-sm {
+            font-size: 0.75rem !important;
+        }
+
+        .text-xs {
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        /* Adjust navigation */
+        nav {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #000;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .h-16 {
+            height: 3rem !important;
+        }
+
+        /* Adjust camera modal */
+        .camera-modal-content {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            max-width: 28rem;
+            margin: 0.75rem;
+        }
+
+        .camera-preview {
+            height: 50vh;
+            max-height: 350px;
+            border-radius: 0.5rem;
+        }
+
+        /* Adjust buttons in camera modal */
+        .capture-button {
+            bottom: 1.5rem;
+            padding: 0.75rem;
+        }
+
+        .close-button {
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 2rem;
+            height: 2rem;
+        }
+
+        /* Adjust map controls */
+        .leaflet-control-zoom {
+            margin: 0.5rem !important;
+        }
+
+        .leaflet-control-zoom-in,
+        .leaflet-control-zoom-out {
+            width: 24px !important;
+            height: 24px !important;
+            line-height: 22px !important;
+            font-size: 14px !important;
+        }
+
+        /* Make the camera icon and text more prominent */
+        #cameraButton {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #2563eb;
+            margin-right: 1rem;
+        }
+
+        #cameraButton i {
+            font-size: 1.25rem;
+        }
+
+        #locationStatus {
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+        }
+
+        #locationStatus i {
+            margin-right: 0.5rem;
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="min-h-screen">
     <!-- Navigation -->
-    <nav class="bg-white border-gray-200 dark:bg-gray-900">
-        <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-            <a href="/" class="flex items-center">
-                <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">TehriMap</span>
-            </a>
-            <div class="flex items-center md:order-2">
-                <div id="auth-buttons" class="flex items-center space-x-3">
-                    <button type="button" onclick="window.location.href='login.html'" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login</button>
-                    <button type="button" onclick="window.location.href='register.html'" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Sign Up</button>
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors">TehriMap</a>
+                    <div class="hidden md:flex items-center space-x-8 ml-10">
+                        <a href="/" class="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
+                        <a href="/occurrence.html" class="text-blue-600 font-medium px-3 py-2 rounded-md text-sm">सूचना दर्ज करें</a>
+                    </div>
                 </div>
-            </div>
-            <div class="items-center justify-between hidden w-full md:flex md:w-auto md:order-1" id="navbar-search">
-                <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-                    <li>
-                        <a href="/" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Home</a>
-                    </li>
-                    <li>
-                        <a href="/occurrence.html" class="block py-2 pl-3 pr-4 text-blue-700 rounded md:bg-transparent md:p-0" aria-current="page">Report Occurrence</a>
-                    </li>
-                    <li id="admin-link" style="display: none;">
-                        <a href="/admin.html" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Admin Dashboard</a>
-                    </li>
-                </ul>
+                <div class="flex items-center space-x-4" id="auth-buttons">
+                    <!-- Will be populated by JavaScript -->
+                </div>
             </div>
         </div>
     </nav>
 
     <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-2xl font-bold mb-6">Report an Occurrence</h2>
-            <form id="occurrenceForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="space-y-6">
-                        <div>
-                            <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                            <input type="text" id="title" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                        </div>
-                        <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea id="description" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required></textarea>
-                        </div>
-                        <div>
-                            <label for="reporterName" class="block text-sm font-medium text-gray-700">Your Name</label>
-                            <input type="text" id="reporterName" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                        </div>
-                        <div>
-                            <label for="reporterPhone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                            <input type="tel" id="reporterPhone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Photos</label>
-                            <div class="mt-1 flex flex-col space-y-4">
-                                <!-- Camera Capture Button -->
-                                <button type="button" id="cameraButton" class="w-full flex items-center justify-center px-6 py-3 border-2 border-blue-300 border-dashed rounded-md hover:border-blue-400 transition-colors">
-                                    <div class="space-y-1 text-center">
-                                        <i class="fas fa-camera text-2xl text-blue-500 mb-2"></i>
-                                        <div class="flex text-sm text-gray-600">
-                                            <span class="text-blue-600">Take a Photo</span>
-                                        </div>
-                                    </div>
-                                </button>
+        <form id="occurrenceForm" class="max-w-4xl mx-auto bg-white rounded-lg p-6">
+            <h1 class="text-2xl font-bold mb-6">सूचना दर्ज करें</h1>
+            
+            <div class="space-y-4">
+                <div class="mb-4">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" id="title" class="input-field" required>
+                </div>
 
-                                <!-- File Upload Section -->
-                                <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                                    <div class="space-y-1 text-center">
-                                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-                                        <div class="flex text-sm text-gray-600">
-                                            <label for="photos" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                                <span>Upload photos</span>
-                                                <input id="photos" type="file" class="sr-only" multiple accept="image/*">
-                                            </label>
-                                        </div>
-                                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="photoPreview" class="photo-preview mt-4"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                        <div id="map"></div>
-                        <p class="mt-2 text-sm text-gray-500">Click on the map to set the location</p>
-                        <input type="hidden" id="latitude" required>
-                        <input type="hidden" id="longitude" required>
-                    </div>
+                <div class="mb-4">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea id="description" class="input-field" rows="4" required></textarea>
                 </div>
-                <div class="flex justify-end">
-                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        Submit Report
-                    </button>
+
+                <div class="mb-4">
+                    <label for="reporterName" class="form-label">Your Name</label>
+                    <input type="text" id="reporterName" class="input-field" required>
                 </div>
-            </form>
-        </div>
+
+                <div class="mb-4">
+                    <label for="reporterPhone" class="form-label">Phone Number</label>
+                    <input type="tel" id="reporterPhone" class="input-field" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Location</label>
+                    <div id="locationStatus" class="text-sm mb-2">
+                        <span class="text-blue-600">
+                            <i class="fas fa-location-arrow mr-2"></i>Detecting your location...
+                        </span>
+                    </div>
+                    <input type="hidden" id="latitude" required>
+                    <input type="hidden" id="longitude" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Photos</label>
+                    <div class="flex items-center gap-4 mb-2">
+                        <button type="button" id="cameraButton" class="text-blue-600 flex items-center gap-2">
+                            <i class="fas fa-camera"></i>
+                            Take a Photo
+                        </button>
+                        <label class="text-blue-600 cursor-pointer flex items-center gap-2">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            Upload photos
+                            <input id="photos" type="file" class="hidden" multiple accept="image/*">
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                    <div id="photoPreview" class="mt-2"></div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-button mt-6">
+                Submit Report
+            </button>
+        </form>
     </div>
 
     <!-- Scripts -->
@@ -190,248 +451,252 @@
             integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
             crossorigin=""></script>
     <script>
-        let map;
-        let marker;
         let uploadedPhotos = [];
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize map
-            map = L.map('map').setView([30.3753, 78.4744], 13); // Tehri coordinates
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            // Get location as soon as the page loads
+            getLocation();
 
-            // Add click event to place marker
-            map.on('click', function(e) {
-                if (marker) {
-                    map.removeLayer(marker);
-                }
-                marker = L.marker(e.latlng).addTo(map);
-                document.getElementById('latitude').value = e.latlng.lat;
-                document.getElementById('longitude').value = e.latlng.lng;
-            });
+            // Handle form submission
+            document.getElementById('occurrenceForm').addEventListener('submit', handleFormSubmit);
 
-            // Camera functionality
-            const cameraButton = document.getElementById('cameraButton');
+            // Setup photo handling
+            setupPhotoHandlers();
+        });
+
+        function getLocation() {
+            const locationStatus = document.getElementById('locationStatus');
             
-            // Check if the device has camera capabilities
+            if (!navigator.geolocation) {
+                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>Location detection is not supported by your browser</span>';
+                return;
+            }
+
+            function success(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                
+                document.getElementById('latitude').value = latitude;
+                document.getElementById('longitude').value = longitude;
+                
+                locationStatus.innerHTML = '<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Location detected successfully</span>';
+            }
+
+            function error() {
+                locationStatus.innerHTML = '<span class="text-red-600"><i class="fas fa-exclamation-circle mr-2"></i>Unable to detect location</span>';
+            }
+
+            navigator.geolocation.getCurrentPosition(success, error, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        }
+
+        function setupPhotoHandlers() {
+            const cameraButton = document.getElementById('cameraButton');
             const hasGetUserMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
             
             if (hasGetUserMedia) {
-                // Device has camera capabilities
-                cameraButton.addEventListener('click', async () => {
-                    try {
-                        // Try to access the camera
-                        const stream = await navigator.mediaDevices.getUserMedia({ 
-                            video: { facingMode: 'environment' } // Prefer back camera
-                        });
-
-                        // Create video and canvas elements for capture
-                        const videoEl = document.createElement('video');
-                        videoEl.srcObject = stream;
-                        videoEl.style.display = 'none';
-                        document.body.appendChild(videoEl);
-
-                        // Create capture button
-                        const captureModal = document.createElement('div');
-                        captureModal.className = 'camera-modal';
-                        captureModal.innerHTML = `
-                            <div class="camera-modal-content">
-                                <div class="relative">
-                                    <video id="cameraPreview" class="camera-preview" autoplay playsinline></video>
-                                    <button id="captureBtn" class="capture-button">
-                                        <div class="w-12 h-12 rounded-full border-4 border-blue-500"></div>
-                                    </button>
-                                    <button id="closeCamera" class="close-button">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                        document.body.appendChild(captureModal);
-
-                        const preview = document.getElementById('cameraPreview');
-                        preview.srcObject = stream;
-                        await preview.play();
-
-                        // Handle capture
-                        document.getElementById('captureBtn').onclick = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = preview.videoWidth;
-                            canvas.height = preview.videoHeight;
-                            canvas.getContext('2d').drawImage(preview, 0, 0);
-                            
-                            // Convert to file
-                            canvas.toBlob((blob) => {
-                                const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
-                                handlePhotos([file]);
-                                
-                                // Cleanup
-                                stream.getTracks().forEach(track => track.stop());
-                                captureModal.remove();
-                                videoEl.remove();
-                            }, 'image/jpeg');
-                        };
-
-                        // Handle close
-                        document.getElementById('closeCamera').onclick = () => {
-                            stream.getTracks().forEach(track => track.stop());
-                            captureModal.remove();
-                            videoEl.remove();
-                        };
-
-                    } catch (error) {
-                        console.error('Error accessing camera:', error);
-                        // Fallback to file input if camera access fails
-                        fallbackToFileUpload();
-                    }
-                });
+                cameraButton.addEventListener('click', handleCameraCapture);
             } else {
-                // Device doesn't have camera capabilities
                 cameraButton.addEventListener('click', fallbackToFileUpload);
                 cameraButton.querySelector('span').textContent = 'Upload from Device';
-                cameraButton.title = 'Your device does not have camera access. You can upload photos from your device instead.';
+                cameraButton.title = 'Your device does not have camera access';
             }
 
-            function fallbackToFileUpload() {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.multiple = true;
-                
-                input.onchange = (e) => handlePhotos(e.target.files);
-                input.click();
-            }
-
-            // Handle photo preview for both upload and camera capture
-            function handlePhotos(files) {
-                const preview = document.getElementById('photoPreview');
-                
-                Array.from(files).forEach(file => {
-                    if (!file.type.startsWith('image/')) {
-                        alert('Please upload only image files');
-                        return;
-                    }
-
-                    // Check file size (10MB limit)
-                    if (file.size > 10 * 1024 * 1024) {
-                        alert('File size should not exceed 10MB');
-                        return;
-                    }
-
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        // Create container for image and remove button
-                        const container = document.createElement('div');
-                        container.className = 'relative group';
-
-                        // Create image element
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'photo-preview-item rounded-lg';
-                        container.appendChild(img);
-
-                        // Create remove button
-                        const removeBtn = document.createElement('button');
-                        removeBtn.className = 'absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity';
-                        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-                        removeBtn.onclick = function() {
-                            container.remove();
-                            uploadedPhotos = uploadedPhotos.filter(p => p !== file);
-                        };
-                        container.appendChild(removeBtn);
-
-                        preview.appendChild(container);
-                    }
-                    reader.readAsDataURL(file);
-                    uploadedPhotos.push(file);
-                });
-            }
-
-            // Update file input handler to use the new handlePhotos function
             document.getElementById('photos').addEventListener('change', function(e) {
                 handlePhotos(e.target.files);
             });
+        }
 
-            // Handle form submission
-            document.getElementById('occurrenceForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
+        async function handleCameraCapture() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }
+                });
 
-                if (!document.getElementById('latitude').value || !document.getElementById('longitude').value) {
-                    alert('Please select a location on the map');
-                    return;
-                }
+                const videoEl = document.createElement('video');
+                videoEl.srcObject = stream;
+                videoEl.style.display = 'none';
+                document.body.appendChild(videoEl);
 
-                if (uploadedPhotos.length === 0) {
-                    alert('Please upload at least one photo');
-                    return;
-                }
+                const captureModal = document.createElement('div');
+                captureModal.className = 'camera-modal';
+                captureModal.innerHTML = `
+                    <div class="camera-modal-content">
+                        <div class="relative">
+                            <video id="cameraPreview" class="camera-preview" autoplay playsinline></video>
+                            <button id="captureBtn" class="capture-button">
+                                <div class="w-12 h-12 rounded-full border-4 border-blue-500"></div>
+                            </button>
+                            <button id="closeCamera" class="close-button">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(captureModal);
 
-                const formData = new FormData();
-                const occurrenceData = {
-                    title: document.getElementById('title').value,
-                    description: document.getElementById('description').value,
-                    reporterName: document.getElementById('reporterName').value,
-                    reporterPhone: document.getElementById('reporterPhone').value,
-                    latitude: parseFloat(document.getElementById('latitude').value),
-                    longitude: parseFloat(document.getElementById('longitude').value),
-                    location: `${document.getElementById('latitude').value}, ${document.getElementById('longitude').value}`,
-                    status: "PENDING",
-                    activeOnMap: true,
-                    reporterId: sessionStorage.getItem('userId') || 'anonymous'
+                const preview = document.getElementById('cameraPreview');
+                preview.srcObject = stream;
+                await preview.play();
+
+                document.getElementById('captureBtn').onclick = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = preview.videoWidth;
+                    canvas.height = preview.videoHeight;
+                    canvas.getContext('2d').drawImage(preview, 0, 0);
+                    
+                    canvas.toBlob((blob) => {
+                        const file = new File([blob], "camera-capture.jpg", { type: "image/jpeg" });
+                        handlePhotos([file]);
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                        captureModal.remove();
+                        videoEl.remove();
+                    }, 'image/jpeg');
                 };
 
-                // Create a blob with proper content type
-                const occurrenceBlob = new Blob([JSON.stringify(occurrenceData)], {
-                    type: 'application/json'
-                });
-                formData.append('occurrence', occurrenceBlob);
+                document.getElementById('closeCamera').onclick = () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    captureModal.remove();
+                    videoEl.remove();
+                };
 
-                // Add photos
-                uploadedPhotos.forEach((photo, index) => {
-                    formData.append(`photos`, photo);
-                });
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                fallbackToFileUpload();
+            }
+        }
 
-                try {
-                    const headers = {};
-                    const token = sessionStorage.getItem('token');
-                    if (token) {
-                        headers['Authorization'] = `Bearer ${token}`;
-                    }
+        function fallbackToFileUpload() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.multiple = true;
+            input.onchange = (e) => handlePhotos(e.target.files);
+            input.click();
+        }
 
-                    const response = await fetch('/api/occurrences', {
-                        method: 'POST',
-                        headers: headers,
-                        body: formData
-                    });
-
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Failed to submit occurrence');
-                    }
-
-                    alert('Occurrence submitted successfully!');
-                    window.location.href = '/';
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert(error.message || 'Failed to submit occurrence. Please try again.');
+        function handlePhotos(files) {
+            const preview = document.getElementById('photoPreview');
+            
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please upload only image files');
+                    return;
                 }
+
+                if (file.size > 10 * 1024 * 1024) {
+                    alert('File size should not exceed 10MB');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const container = document.createElement('div');
+                    container.className = 'relative inline-block';
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'w-20 h-20 object-cover rounded';
+                    container.appendChild(img);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.className = 'absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center';
+                    removeBtn.innerHTML = '×';
+                    removeBtn.onclick = function() {
+                        container.remove();
+                        uploadedPhotos = uploadedPhotos.filter(p => p !== file);
+                    };
+                    container.appendChild(removeBtn);
+
+                    preview.appendChild(container);
+                }
+                reader.readAsDataURL(file);
+                uploadedPhotos.push(file);
+            });
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const latitude = document.getElementById('latitude').value;
+            const longitude = document.getElementById('longitude').value;
+
+            if (!latitude || !longitude) {
+                alert('Please wait for location detection or enable location services');
+                return;
+            }
+
+            if (uploadedPhotos.length === 0) {
+                alert('Please upload at least one photo');
+                return;
+            }
+
+            const formData = new FormData();
+            const occurrenceData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                reporterName: document.getElementById('reporterName').value,
+                reporterPhone: document.getElementById('reporterPhone').value,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
+                location: `${latitude}, ${longitude}`,
+                status: "PENDING",
+                activeOnMap: true,
+                reporterId: sessionStorage.getItem('userId') || 'anonymous'
+            };
+
+            const occurrenceBlob = new Blob([JSON.stringify(occurrenceData)], {
+                type: 'application/json'
+            });
+            formData.append('occurrence', occurrenceBlob);
+
+            uploadedPhotos.forEach((photo, index) => {
+                formData.append(`photos`, photo);
             });
 
-            // Check authentication status
-            if (sessionStorage.getItem('token')) {
-                const authButtons = document.getElementById('auth-buttons');
-                authButtons.innerHTML = `
-                    <span class="text-gray-300 mr-4">${sessionStorage.getItem('username') || 'User'}</span>
-                    <button type="button" onclick="logout()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Logout</button>
-                `;
-            }
+            try {
+                const headers = {};
+                const token = sessionStorage.getItem('token');
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
 
-            // Show admin link if user is admin
-            if (sessionStorage.getItem('role') === 'ADMIN') {
-                document.getElementById('admin-link').style.display = 'block';
+                const response = await fetch('/api/occurrences', {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to submit occurrence');
+                }
+
+                alert('Occurrence submitted successfully!');
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Error:', error);
+                alert(error.message || 'Failed to submit occurrence. Please try again.');
             }
-        });
+        }
+
+        // Check authentication status
+        if (sessionStorage.getItem('token')) {
+            const authButtons = document.getElementById('auth-buttons');
+            authButtons.innerHTML = `
+                <span class="text-gray-300 mr-4">${sessionStorage.getItem('username') || 'User'}</span>
+                <button type="button" onclick="logout()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Logout</button>
+            `;
+        }
+
+        // Show admin link if user is admin
+        if (sessionStorage.getItem('role') === 'ADMIN') {
+            document.getElementById('admin-link').style.display = 'block';
+        }
 
         function logout() {
             sessionStorage.clear();

@@ -1,19 +1,19 @@
 services:
   - type: web
-    name: tehri-map-backend
+    name: tehrimap
     env: docker
-    dockerfilePath: ./Dockerfile
-    dockerCommand: java -jar app.jar
+    plan: free
+    region: singapore
+    branch: main
+    healthCheckPath: /actuator/health
     envVars:
-      - key: SPRING_DATA_MONGODB_URI
-        value: mongodb+srv://parasstarkmarkup:DKvIzrVeJgR1nrwX@cluster0.cr8izeq.mongodb.net/authdb?retryWrites=true&w=majority
-      - key: SPRING_DATA_MONGODB_DATABASE
-        value: authdb
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: MONGODB_URI
+        sync: false # Will be set manually in Render dashboard
       - key: JWT_SECRET
-        value: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
-      - key: CORS_ALLOWED_ORIGINS
-        value: "*"
+        sync: false # Will be set manually in Render dashboard
       - key: PORT
-        value: "8080"
-    healthCheckPath: /api/health
-    autoDeploy: true 
+        value: 8080
+    buildCommand: "./mvnw clean package -DskipTests"
+    startCommand: "java -jar target/*.jar" 

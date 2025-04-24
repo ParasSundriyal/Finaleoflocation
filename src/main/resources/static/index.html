@@ -25,6 +25,7 @@
             outline: none;
             transition: all 0.2s;
             background-color: white;
+            font-size: 16px; /* Prevent zoom on iOS */
         }
         .search-input:focus {
             border-color: #4f46e5;
@@ -80,6 +81,64 @@
             transform: scale(1.05);
             transition: transform 0.2s;
         }
+        /* Mobile-specific styles */
+        @media (max-width: 640px) {
+            #map {
+                height: calc(100vh - 64px);
+            }
+            .mobile-menu {
+                display: none;
+                position: absolute;
+                top: 64px;
+                left: 0;
+                right: 0;
+                background: white;
+                z-index: 50;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+            .mobile-menu.show {
+                display: block;
+            }
+            .mobile-menu .search-container {
+                padding: 1rem;
+            }
+            .mobile-menu .search-input {
+                font-size: 16px;
+            }
+            .mobile-menu a {
+                display: block;
+                padding: 1rem;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .mobile-menu a:last-child {
+                border-bottom: none;
+            }
+            .mobile-menu .search-results {
+                position: relative;
+                margin: 0.5rem 0;
+                max-height: 200px;
+            }
+            #mobile-auth-buttons {
+                padding: 1rem;
+                border-top: 1px solid #e5e7eb;
+            }
+            #mobile-auth-buttons button,
+            #mobile-auth-buttons a {
+                display: block;
+                width: 100%;
+                padding: 0.75rem 1rem;
+                margin-bottom: 0.5rem;
+                text-align: center;
+                border-radius: 0.375rem;
+            }
+            #mobile-auth-buttons button:last-child,
+            #mobile-auth-buttons a:last-child {
+                margin-bottom: 0;
+            }
+            .mobile-menu-open #map {
+                height: calc(100vh - 64px - 100%);
+            }
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-gray-100">
@@ -87,6 +146,7 @@
     <nav class="bg-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
+                <!-- Logo and Desktop Navigation -->
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
                         <a href="/" class="text-xl font-bold text-gray-800">TehriMap</a>
@@ -104,8 +164,9 @@
                     </div>
                     </div>
                     
-                <!-- Desktop Search -->
-                <div class="hidden sm:flex items-center relative w-96">
+                <!-- Desktop Search and Auth -->
+                <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                    <div class="relative w-96">
                     <div class="search-container">
                         <input type="text" id="desktop-search" 
                                placeholder="Search Uttarakhand districts..." 
@@ -114,15 +175,16 @@
                         <div id="desktop-search-results" class="search-results"></div>
                     </div>
                 </div>
-
-                <!-- Desktop Auth Buttons -->
-                <div class="hidden sm:ml-6 sm:flex sm:items-center" id="desktop-auth-buttons">
+                    <div id="desktop-auth-buttons">
                     <!-- Will be populated by JavaScript -->
+                    </div>
                 </div>
 
                 <!-- Mobile menu button -->
                 <div class="flex items-center sm:hidden">
-                    <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" aria-expanded="false">
+                    <button type="button" id="mobile-menu-button" 
+                            class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" 
+                            aria-expanded="false">
                         <span class="sr-only">Open main menu</span>
                         <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -133,30 +195,33 @@
             </div>
             
             <!-- Mobile menu -->
-        <div class="sm:hidden hidden" id="mobile-menu">
-            <div class="pt-2 pb-3 space-y-1">
-                <a href="/" class="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+        <div class="sm:hidden mobile-menu" id="mobile-menu">
+            <div class="bg-white">
+                <a href="/" class="block text-indigo-600 bg-indigo-50 px-4 py-3 text-base font-medium border-l-4 border-indigo-500">
                     Home
                 </a>
-                <a href="/occurrence.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                <a href="/occurrence.html" class="block text-gray-600 hover:bg-gray-50 px-4 py-3 text-base font-medium border-l-4 border-transparent hover:border-gray-300">
                     सूचना दर्ज करें
                 </a>
-                <a href="/aapdamitr.html" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">
+                <a href="/aapdamitr.html" class="block text-gray-600 hover:bg-gray-50 px-4 py-3 text-base font-medium border-l-4 border-transparent hover:border-gray-300">
                     <i class="fas fa-phone-alt mr-2"></i>आपदा मित्र
                 </a>
+                
                 <!-- Mobile Search -->
-                <div class="px-2 pt-2 pb-3">
+                <div class="p-4 border-t border-gray-200">
                     <div class="search-container">
                         <input type="text" id="mobile-search" 
                                placeholder="Search Uttarakhand districts..." 
                                class="search-input"
                                autocomplete="off">
-                        <div id="mobile-search-results" class="search-results mt-2"></div>
+                        <div id="mobile-search-results" class="search-results"></div>
                     </div>
                 </div>
+                
+                <!-- Mobile Auth Buttons -->
+                <div class="p-4 border-t border-gray-200" id="mobile-auth-buttons">
+                    <!-- Will be populated by JavaScript -->
             </div>
-            <div class="pt-4 pb-3 border-t border-gray-200" id="mobile-auth-buttons">
-                <!-- Will be populated by JavaScript -->
             </div>
         </div>
     </nav>
@@ -203,6 +268,60 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="/js/map-data.js"></script>
     <script>
+        // Mobile menu functionality
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const body = document.body;
+
+        mobileMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent event from bubbling up
+            const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+            mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+            mobileMenu.classList.toggle('show');
+            
+            // Toggle the menu icon
+            const menuIcon = mobileMenuButton.querySelector('svg');
+            if (!isExpanded) {
+                menuIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                `;
+            } else {
+                menuIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                `;
+            }
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (mobileMenu.classList.contains('show') && 
+                !mobileMenu.contains(e.target) && 
+                !mobileMenuButton.contains(e.target)) {
+                mobileMenu.classList.remove('show');
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+                
+                // Reset menu icon
+                const menuIcon = mobileMenuButton.querySelector('svg');
+                menuIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                `;
+            }
+        });
+
+        // Close mobile menu when clicking a menu item
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('show');
+                mobileMenuButton.setAttribute('aria-expanded', 'false');
+                
+                // Reset menu icon
+                const menuIcon = mobileMenuButton.querySelector('svg');
+                menuIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                `;
+            });
+        });
+
         // Initialize map with Uttarakhand center
         const map = L.map('map').setView([30.0668, 79.0193], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -303,16 +422,6 @@
                 }
             }
         }
-
-        // Mobile menu toggle
-        const mobileMenuButton = document.getElementById('mobile-menu-button');
-        const mobileMenu = document.getElementById('mobile-menu');
-        
-        mobileMenuButton.addEventListener('click', () => {
-            const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
-            mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
-            mobileMenu.classList.toggle('hidden');
-        });
 
         // Authentication UI
         function updateAuthUI() {

@@ -37,6 +37,47 @@
             max-height: 90vh;
             overflow-y: auto;
         }
+        /* Mobile-specific styles */
+        @media (max-width: 640px) {
+            .contact-card {
+                margin-bottom: 1rem;
+            }
+            .contact-card:hover {
+                transform: none; /* Disable hover effect on mobile */
+            }
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+                max-height: 85vh;
+            }
+            .grid {
+                gap: 1rem;
+            }
+            .filters-section {
+                padding: 1rem;
+            }
+            .filter-group {
+                margin-bottom: 1rem;
+            }
+            /* Improve touch targets */
+            button, 
+            select, 
+            input {
+                min-height: 44px; /* Minimum touch target size */
+            }
+            /* Adjust spacing for mobile */
+            .container {
+                padding: 0.5rem;
+            }
+            /* Make text more readable on mobile */
+            .text-sm {
+                font-size: 0.875rem;
+            }
+            /* Improve modal scrolling on mobile */
+            .modal-content {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -74,9 +115,9 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
             <h1 class="text-2xl font-bold text-gray-900">Emergency Contacts</h1>
-            <button onclick="showAddContactModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+            <button onclick="showAddContactModal()" class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
                 <i class="fas fa-plus mr-2"></i>Add Contact
             </button>
         </div>
@@ -84,13 +125,13 @@
         <!-- Filters -->
         <div class="bg-white p-4 rounded-lg shadow mb-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
+                <div class="filter-group">
                     <label class="block text-sm font-medium text-gray-700 mb-1">District</label>
                     <select id="districtFilter" class="w-full p-2 border rounded-md">
                         <option value="">All Districts</option>
                     </select>
                 </div>
-                <div>
+                <div class="filter-group">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
                     <select id="departmentFilter" class="w-full p-2 border rounded-md">
                         <option value="">All Departments</option>
@@ -100,7 +141,7 @@
                         <option value="Disaster">Disaster Management</option>
                     </select>
                 </div>
-                <div>
+                <div class="filter-group">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select id="statusFilter" class="w-full p-2 border rounded-md">
                         <option value="">All Status</option>

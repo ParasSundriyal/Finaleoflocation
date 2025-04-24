@@ -365,6 +365,90 @@
         #locationStatus i {
             margin-right: 0.5rem;
         }
+
+        /* Mobile-specific styles */
+        @media (max-width: 640px) {
+            body {
+                padding: 4px;
+            }
+
+            #map {
+                height: 250px;
+            }
+
+            .form-container {
+                padding: 0.75rem;
+                margin: 0.25rem auto;
+            }
+
+            .input-field {
+                font-size: 16px; /* Prevent zoom on iOS */
+                padding: 0.5rem;
+                min-height: 44px; /* Better touch targets */
+            }
+
+            .photo-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 0.25rem;
+            }
+
+            .submit-button {
+                min-height: 44px;
+                font-size: 1rem;
+                margin-top: 1rem;
+            }
+
+            .camera-modal {
+                padding: 1rem;
+            }
+
+            .camera-modal-content {
+                width: 95%;
+                max-width: none;
+                margin: 0.5rem;
+            }
+
+            .camera-controls {
+                padding: 0.5rem;
+            }
+
+            .camera-controls button {
+                min-height: 44px;
+                font-size: 1rem;
+            }
+
+            /* Improve form layout on mobile */
+            .grid {
+                gap: 0.75rem;
+            }
+
+            .field-container {
+                margin-bottom: 1rem;
+            }
+
+            /* Make text more readable on mobile */
+            .form-label {
+                font-size: 0.9rem;
+                margin-bottom: 0.5rem;
+            }
+
+            /* Improve touch targets for all interactive elements */
+            button,
+            select,
+            input[type="file"] {
+                min-height: 44px;
+            }
+
+            /* Adjust spacing for mobile */
+            .container {
+                padding: 0.5rem;
+            }
+
+            /* Improve modal scrolling on mobile */
+            .modal-content {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -387,10 +471,20 @@
     </nav>
 
     <div class="container mx-auto px-4 py-8">
-        <form id="occurrenceForm" class="max-w-4xl mx-auto bg-white rounded-lg p-6">
-            <h1 class="text-2xl font-bold mb-6">सूचना दर्ज करें</h1>
-            
-            <div class="space-y-4">
+        <div class="form-container">
+            <form id="occurrenceForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field-container">
+                        <label class="form-label">District</label>
+                        <select id="district" class="input-field" required>
+                            <option value="">Select District</option>
+                        </select>
+                    </div>
+                    <div class="field-container">
+                        <label class="form-label">Area</label>
+                        <input type="text" id="area" class="input-field" required>
+                    </div>
+                </div>
                 <div class="mb-4">
                     <label for="title" class="form-label">Title</label>
                     <input type="text" id="title" class="input-field" required>
@@ -438,12 +532,12 @@
                     <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                     <div id="photoPreview" class="mt-2"></div>
                 </div>
-            </div>
+            </form>
+        </div>
 
-            <button type="submit" class="submit-button mt-6">
-                Submit Report
-            </button>
-        </form>
+        <button type="submit" class="submit-button mt-6">
+            Submit Report
+        </button>
     </div>
 
     <!-- Scripts -->

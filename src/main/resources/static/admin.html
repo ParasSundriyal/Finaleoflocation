@@ -9,7 +9,6 @@
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="js/config.js"></script>
     <style>
         body {
             background-color: #f3f4f6;
@@ -21,15 +20,29 @@
         }
 
         .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+            position: relative;
+            height: calc(100vh - 64px);
+            overflow: hidden;
+        }
+
+        .section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+            background-color: #ffffff;
+            z-index: 1;
+        }
+
+        .section.active {
+            display: block;
         }
 
         #map {
             width: 100%;
-            height: calc(100vh - 64px - 60px); /* Subtract navbar and footer heights */
-            border-radius: 0;
+            height: 100%;
         }
 
         .footer {
@@ -59,7 +72,7 @@
             padding: 1.5rem;
             margin-bottom: 1rem;
             position: relative;
-            z-index: 1000;
+            z-index: 1;
         }
         .nearest-police-btn {
             display: inline-flex;
@@ -257,9 +270,31 @@
             width: 100%;
             position: relative;
         }
-        #map {
+        .grid {
             height: 100%;
-            width: 100%;
+        }
+        #occurrenceSection {
+            overflow-y: auto;
+        }
+        .occurrence-content {
+            padding: 1rem;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+        .filters-bar {
+            background-color: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        .occurrence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            max-width: 1600px;
+            margin: 0 auto;
         }
         @media (max-width: 768px) {
             body {
@@ -280,8 +315,21 @@
             }
 
             .marker-form {
-                max-height: 70vh;
-                bottom: 60px; /* Account for footer */
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                transform: translateY(100%);
+                transition: transform 0.3s ease-in-out;
+                margin: 0;
+                border-radius: 1rem 1rem 0 0;
+                max-height: 80vh;
+                overflow-y: auto;
+                z-index: 1000;
+            }
+
+            .marker-form.show {
+                transform: translateY(0);
             }
 
             #occurrenceSection {
@@ -335,26 +383,6 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-            }
-            .marker-form {
-                display: none;
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: white;
-                padding: 1rem;
-                border-radius: 1rem 1rem 0 0;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-                z-index: 2000;
-                max-height: 80vh;
-                overflow-y: auto;
-                transform: translateY(100%);
-                transition: transform 0.3s ease-in-out;
-            }
-            .marker-form.show {
-                display: block;
-                transform: translateY(0);
             }
             .col-span-1 {
                 display: none;
@@ -432,13 +460,14 @@
         }
         
         #occurrenceSection {
-            overflow: hidden;
+            overflow-y: auto;
             position: fixed;
             inset: 0;
             margin-top: 64px;
             display: flex;
             flex-direction: column;
-            background-color: #f3f4f6;
+            background-color: white;
+            z-index: 1;
         }
         
         .filters-bar {
@@ -447,13 +476,14 @@
             padding: 1rem;
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 2;
         }
         
         .occurrence-content {
             flex: 1;
             overflow-y: auto;
             padding: 1rem;
+            height: calc(100% - 60px);
         }
         
         .occurrence-grid {
@@ -477,6 +507,54 @@
             .occurrence-grid {
                 grid-template-columns: 1fr;
             }
+        }
+        .marker-form input[type="number"],
+        .marker-form input[type="text"],
+        .marker-form textarea,
+        .marker-form select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.375rem;
+            margin-top: 0.25rem;
+        }
+        
+        .marker-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .marker-form button[type="submit"] {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .marker-form button[type="submit"]:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Update the grid layout */
+        .grid {
+            height: 100%;
+        }
+
+        /* Update occurrence section styles */
+        #occurrenceSection {
+            overflow-y: auto;
+            background: white;
+        }
+
+        .emergency-contacts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
         }
     </style>
 </head>
@@ -528,88 +606,92 @@
     </nav>
 
     <div class="main-content">
-        <!-- Main Content -->
-        <div class="grid grid-cols-1 md:grid-cols-4 flex-1">
-            <!-- Marker Form Column -->
-            <div class="col-span-1 overflow-y-auto p-4 order-2 md:order-1 bg-white">
-                <div class="marker-form">
-                    <h2 class="text-xl font-bold mb-4">Add New Marker</h2>
-                    <form id="markerForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Marker Name</label>
-                            <input type="text" id="markerName" required
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Description</label>
-                            <textarea id="markerDescription" required rows="3"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Type</label>
-                            <select id="markerType" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="TOURIST_SPOT">Tourist Spot</option>
-                                <option value="HOSPITAL">Hospital</option>
-                                <option value="SCHOOL">School</option>
-                                <option value="RESTAURANT">Restaurant</option>
-                                <option value="HOTEL">Hotel</option>
-                                <option value="POLICE_STATION">Police Station</option>
-                                <option value="Custom">Custom</option>
-                            </select>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
+        <div id="add-markers" class="section active">
+            <div class="grid grid-cols-1 md:grid-cols-4 h-full">
+                <div class="col-span-1 overflow-y-auto p-4 order-2 md:order-1 bg-white">
+                    <div class="marker-form">
+                        <h2 class="text-xl font-bold mb-4">Add New Marker</h2>
+                        <form id="markerForm" class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Latitude</label>
-                                <input type="number" id="markerLatitude" step="any" required readonly
-                                       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50">
+                                <label class="block text-sm font-medium text-gray-700">Marker Name</label>
+                                <input type="text" id="markerName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Longitude</label>
-                                <input type="number" id="markerLongitude" step="any" required readonly
-                                       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50">
+                                <label class="block text-sm font-medium text-gray-700">Description</label>
+                                <textarea id="markerDescription" required rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
                             </div>
-                        </div>
-                        <button type="submit"
-                                class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                            <i class="fas fa-plus mr-2"></i>Add Marker
-                        </button>
-                    </form>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Type</label>
+                                <select id="markerType" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="TOURIST_SPOT">Tourist Spot</option>
+                                    <option value="HOSPITAL">Hospital</option>
+                                    <option value="SCHOOL">School</option>
+                                    <option value="RESTAURANT">Restaurant</option>
+                                    <option value="HOTEL">Hotel</option>
+                                    <option value="POLICE_STATION">Police Station</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Latitude</label>
+                                    <input type="number" id="markerLatitude" step="any" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Longitude</label>
+                                    <input type="number" id="markerLongitude" step="any" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                                Add Marker
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Map Column -->
-            <div class="col-span-1 md:col-span-3 order-1 md:order-2 relative">
-                <div id="map"></div>
+                <div class="col-span-1 md:col-span-3 order-1 md:order-2">
+                    <div id="map"></div>
+                </div>
             </div>
         </div>
 
-        <!-- Occurrence Section -->
-        <div id="occurrenceSection" class="hidden">
-            <!-- Filters Bar -->
-            <div class="filters-bar">
-                <div class="max-w-[1600px] mx-auto">
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <h2 class="text-xl font-bold">Occurrences</h2>
-                        <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
-                            <select id="statusFilter" class="p-2 border rounded-lg bg-white min-w-[150px]">
-                                <option value="ALL">All Status</option>
-                                <option value="PENDING">Pending</option>
-                                <option value="VERIFIED">Verified</option>
-                                <option value="REJECTED">Rejected</option>
-                            </select>
-                            <select id="sortOrder" class="p-2 border rounded-lg bg-white min-w-[150px]">
-                                <option value="NEWEST">Newest First</option>
-                                <option value="OLDEST">Oldest First</option>
-                            </select>
-                        </div>
-                    </div>
+        <div id="manage-markers" class="section">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-4">Manage Markers</h2>
+                <div class="marker-list" id="markerList">
+                    <!-- Markers will be loaded here -->
                 </div>
             </div>
+        </div>
 
-            <!-- Scrollable Content Area -->
-            <div class="occurrence-content">
-                <div id="occurrenceList" class="occurrence-grid"></div>
+        <div id="emergency-contacts" class="section">
+            <div class="p-4">
+                <h2 class="text-xl font-bold mb-4">Emergency Contacts</h2>
+                <div class="emergency-contacts-grid" id="emergencyContactsList">
+                    <!-- Emergency contacts will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div id="manage-occurrences" class="section">
+            <div class="p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold">Manage Occurrences</h2>
+                    <div class="flex space-x-4">
+                        <select id="statusFilter" class="rounded-md border-gray-300">
+                            <option value="ALL">All Status</option>
+                            <option value="PENDING">Pending</option>
+                            <option value="VERIFIED">Verified</option>
+                            <option value="REJECTED">Rejected</option>
+                        </select>
+                        <select id="sortOrder" class="rounded-md border-gray-300">
+                            <option value="NEWEST">Newest First</option>
+                            <option value="OLDEST">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="occurrence-grid" id="occurrenceList">
+                    <!-- Occurrences will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
@@ -666,6 +748,13 @@
             crossorigin=""></script>
     <script src="js/config.js"></script>
     <script>
+        // Add a default config if it's not loaded
+        if (typeof config === 'undefined') {
+            config = {
+                apiBaseUrl: ''  // Default to same origin
+            };
+        }
+
         // Uttarakhand districts data with coordinates
         const uttarakhandDistricts = [
             { name: "Tehri Garhwal", lat: 30.3753, lng: 78.4337 },
@@ -702,9 +791,7 @@
         };
 
         function createCustomIcon(type) {
-            // Check if the type exists in our icons, otherwise use default
             const iconText = markerIcons[type] || markerIcons.DEFAULT;
-            
             return L.divIcon({
                 html: `<span style="font-size: 2rem;">${iconText}</span>`,
                 className: 'custom-marker',
@@ -715,71 +802,171 @@
         }
 
         function initMap() {
-            // Initialize map
-            map = L.map('map', {
-                doubleClickZoom: true,
-                zoomControl: true
-            });
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            try {
+                // Initialize map
+                map = L.map('map', {
+                    doubleClickZoom: false,
+                    center: [30.0668, 79.0193],
+                    zoom: 7
+                });
 
-            // Set initial view to Uttarakhand
-            map.setView([30.0668, 79.0193], 7);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
 
-            // Add district markers
-            uttarakhandDistricts.forEach(district => {
-                L.marker([district.lat, district.lng])
-                    .bindPopup(`
-                        <div class="popup-content">
-                            <div class="popup-title">${district.name}</div>
-                        </div>
-                    `)
-                    .on('click', () => selectDistrict(district.name))
-                    .addTo(map);
-            });
+                // Add district markers
+                uttarakhandDistricts.forEach(district => {
+                    L.marker([district.lat, district.lng])
+                        .bindPopup(`
+                            <div class="popup-content">
+                                <div class="popup-title">${district.name}</div>
+                            </div>
+                        `)
+                        .on('click', () => selectDistrict(district.name))
+                        .addTo(map);
+                });
 
-            // Initialize district dropdown
-            const districtSelect = document.getElementById('districtSearch');
-            districtSelect.innerHTML = '<option value="">Select a district...</option>';
-            uttarakhandDistricts.forEach(district => {
-                const option = document.createElement('option');
-                option.value = district.name;
-                option.textContent = district.name;
-                districtSelect.appendChild(option);
-            });
+                // Initialize district dropdown
+                const districtSelect = document.getElementById('districtSearch');
+                districtSelect.innerHTML = '<option value="">Select a district...</option>';
+                uttarakhandDistricts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.name;
+                    option.textContent = district.name;
+                    districtSelect.appendChild(option);
+                });
 
-            // Check for saved district in sessionStorage
-            const savedDistrict = sessionStorage.getItem('selectedDistrict');
-            if (savedDistrict) {
-                const district = JSON.parse(savedDistrict);
-                currentDistrict = district;
-                document.getElementById('districtSearch').value = district.name;
-                map.setView([district.lat, district.lng], 11);
+                // Add click handler for map
+                map.on('click', handleMapClick);
+
+                // Load existing markers
+                loadMarkers();
+
+                // Make sure map is properly sized
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            } catch (error) {
+                console.error('Error during map initialization:', error);
             }
-
-            // Add click handler for map to set marker coordinates
-            map.on('click', function(e) {
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
-                
-                document.getElementById('markerLatitude').value = lat.toFixed(6);
-                document.getElementById('markerLongitude').value = lng.toFixed(6);
-                
-                // On mobile, show the marker form
-                if (window.innerWidth <= 768) {
-                    const markerForm = document.querySelector('.marker-form');
-                    markerForm.classList.add('show');
-                }
-            });
-
-            // Load existing markers
-            loadMarkers();
         }
 
-        // Update the loadMarkers function
+        // Update the map click handler
+        function handleMapClick(e) {
+            try {
+                console.log('Map clicked at:', e.latlng);
+                
+                // Remove existing temporary marker if it exists
+                if (selectedMarker && map.hasLayer(selectedMarker)) {
+                    map.removeLayer(selectedMarker);
+                }
+
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+
+                // Create new temporary marker
+                selectedMarker = L.marker([lat, lng], {
+                    icon: createCustomIcon(document.getElementById('markerType').value || 'DEFAULT')
+                }).addTo(map);
+
+                // Update form fields
+                const latitudeInput = document.getElementById('markerLatitude');
+                const longitudeInput = document.getElementById('markerLongitude');
+
+                console.log('Form fields:', {
+                    latitudeInput: latitudeInput,
+                    longitudeInput: longitudeInput,
+                    lat: lat,
+                    lng: lng
+                });
+
+                if (latitudeInput && longitudeInput) {
+                    latitudeInput.value = lat.toFixed(6);
+                    longitudeInput.value = lng.toFixed(6);
+                    console.log('Updated form fields with coordinates');
+                } else {
+                    console.error('Could not find latitude or longitude input fields');
+                }
+
+                // Show form on mobile
+                if (window.innerWidth <= 768) {
+                    const markerForm = document.querySelector('.marker-form');
+                    if (markerForm) {
+                        markerForm.classList.add('show');
+                    }
+                }
+            } catch (error) {
+                console.error('Error handling map click:', error);
+            }
+        }
+
+        // Update marker form submission
+        document.getElementById('markerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            try {
+                const markerData = {
+                    name: document.getElementById('markerName').value.trim(),
+                    description: document.getElementById('markerDescription').value.trim(),
+                    markerType: document.getElementById('markerType').value,
+                    latitude: parseFloat(document.getElementById('markerLatitude').value),
+                    longitude: parseFloat(document.getElementById('markerLongitude').value)
+                };
+
+                // Validate form data
+                if (!markerData.name || !markerData.description) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+
+                if (isNaN(markerData.latitude) || isNaN(markerData.longitude)) {
+                    alert('Please click on the map to set marker location');
+                    return;
+                }
+
+                const response = await fetch(`${config.apiBaseUrl}/api/markers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify(markerData)
+                });
+
+                if (response.ok) {
+                    // Clear form
+                    this.reset();
+                    
+                    // Remove temporary marker
+                    if (selectedMarker && map.hasLayer(selectedMarker)) {
+                        map.removeLayer(selectedMarker);
+                        selectedMarker = null;
+                    }
+
+                    // Reload markers
+                    await loadMarkers();
+                    
+                    alert('Marker added successfully!');
+
+                    // Hide form on mobile
+                    if (window.innerWidth <= 768) {
+                        const markerForm = document.querySelector('.marker-form');
+                        if (markerForm) {
+                            markerForm.classList.remove('show');
+                        }
+                    }
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to add marker');
+                }
+            } catch (error) {
+                console.error('Error submitting marker:', error);
+                alert(error.message || 'Error adding marker');
+            }
+        });
+
+        // Update loadMarkers function
         async function loadMarkers() {
             try {
                 const response = await fetch(`${config.apiBaseUrl}/api/markers`, {
@@ -793,7 +980,7 @@
                     
                     // Clear existing markers
                     markers.forEach(marker => {
-                        if (map && marker) {
+                        if (map && marker && map.hasLayer(marker)) {
                             map.removeLayer(marker);
                         }
                     });
@@ -811,9 +998,11 @@
                         });
                         
                         mapMarker.bindPopup(`
-                            <div class="font-bold">${marker.name}</div>
-                            <div>${marker.description}</div>
-                            <div class="text-sm text-gray-600">Type: ${marker.markerType}</div>
+                            <div class="popup-content">
+                                <div class="popup-title">${marker.name}</div>
+                                <div class="popup-description">${marker.description}</div>
+                                <div class="popup-type">Type: ${marker.markerType}</div>
+                            </div>
                         `);
                         
                         mapMarker.addTo(map);
@@ -825,13 +1014,21 @@
             }
         }
 
-        // Initialize map when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
+        // Update marker type change handler
+        document.getElementById('markerType').addEventListener('change', function(e) {
+            if (selectedMarker && map.hasLayer(selectedMarker)) {
+                selectedMarker.setIcon(createCustomIcon(e.target.value));
+            }
+        });
+
+        // Make sure the map is initialized after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
             const token = sessionStorage.getItem('token');
             if (!token) {
                 window.location.href = 'login.html';
                 return;
             }
+            console.log('Initializing map...');
             initMap();
         });
 
@@ -845,7 +1042,10 @@
                 sessionStorage.setItem('selectedDistrict', JSON.stringify(district));
                 
                 // Update the select element
-                document.getElementById('districtSearch').value = district.name;
+                const districtSelect = document.getElementById('districtSearch');
+                if (districtSelect) {
+                    districtSelect.value = district.name;
+                }
                 
                 // Center map on district
                 map.setView([district.lat, district.lng], 11, {
@@ -1052,58 +1252,6 @@
                 }
             };
         }
-
-        // Add marker form submission handler
-        document.getElementById('markerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const markerData = {
-                name: document.getElementById('markerName').value,
-                description: document.getElementById('markerDescription').value,
-                markerType: document.getElementById('markerType').value,
-                latitude: parseFloat(document.getElementById('markerLatitude').value),
-                longitude: parseFloat(document.getElementById('markerLongitude').value)
-            };
-
-            // Validate coordinates
-            if (isNaN(markerData.latitude) || isNaN(markerData.longitude)) {
-                alert('Please click on the map to set marker coordinates first');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${config.apiBaseUrl}/api/markers`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify(markerData)
-                });
-
-                if (response.ok) {
-                    document.getElementById('markerForm').reset();
-                    if (selectedMarker) {
-                        map.removeLayer(selectedMarker);
-                        selectedMarker = null;
-                    }
-                    loadMarkers();
-                    alert('Marker added successfully!');
-                    
-                    // On mobile, hide the marker form after successful submission
-                    if (window.innerWidth <= 768) {
-                        const markerForm = document.querySelector('.marker-form');
-                        markerForm.classList.remove('show');
-                    }
-                } else {
-                    const data = await response.json();
-                    alert('Failed to add marker: ' + (data.message || 'Unknown error'));
-                }
-            } catch (error) {
-                console.error('Error adding marker:', error);
-                alert('Error adding marker: ' + error.message);
-            }
-        });
 
         // Add deleteMarker function
         async function deleteMarker(markerId) {
@@ -1385,10 +1533,10 @@
                                     <i class="far fa-user mr-2"></i>
                                     <span>${occurrence.reporterName || 'Anonymous'}</span>
                                 </div>
-                                <button onclick="showOccurrenceDetails(${JSON.stringify(occurrence).replace(/"/g, '&quot;')})" 
+                            <button onclick="showOccurrenceDetails(${JSON.stringify(occurrence).replace(/"/g, '&quot;')})" 
                                         class="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                     View Details <i class="fas fa-chevron-right ml-1"></i>
-                                </button>
+                            </button>
                             </div>
                         </div>
                     `;
@@ -1583,17 +1731,6 @@
             e.stopPropagation();
         });
 
-        function showOccurrenceSection() {
-            // Hide the map and marker form sections
-            document.querySelector('.grid').classList.add('hidden');
-            
-            // Show the occurrence section
-            document.getElementById('occurrenceSection').classList.remove('hidden');
-            
-            // Load occurrences
-            loadOccurrences();
-        }
-
         // Add event listeners for filters
         document.addEventListener('DOMContentLoaded', function() {
             // Add event listeners for filters when they exist
@@ -1608,6 +1745,50 @@
                 sortOrder.addEventListener('change', loadOccurrences);
             }
         });
+
+        // Update the navigation click handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add Markers link
+            document.querySelector('a[href="admin.html"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                showSection('add-markers');
+            });
+
+            // Manage Occurrences link
+            document.querySelector('a[href="#"]').addEventListener('click', function(e) {
+                e.preventDefault();
+                showSection('manage-occurrences');
+                loadOccurrences();
+            });
+        });
+
+        // Update section visibility management
+        function showSection(sectionId) {
+            const mapSection = document.getElementById('add-markers');
+            const occurrenceSection = document.getElementById('manage-occurrences');
+            
+            // Hide both sections first
+            mapSection.classList.remove('active');
+            occurrenceSection.classList.remove('active');
+            
+            // Show the selected section
+            const selectedSection = document.getElementById(sectionId);
+            if (selectedSection) {
+                selectedSection.classList.add('active');
+            }
+            
+            // If showing map section, trigger a resize to fix map display
+            if (sectionId === 'add-markers' && map) {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            }
+        }
+
+        function showOccurrenceSection() {
+            showSection('manage-occurrences');
+            loadOccurrences();
+        }
     </script>
 
     <!-- Emergency Contacts Modal -->

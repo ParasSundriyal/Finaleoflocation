@@ -597,6 +597,31 @@
                     </div>
                 </div>
                 <div>
+                    <label for="customDistrict" class="block text-sm font-medium text-gray-700">District</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-map-marker-alt text-gray-400"></i>
+                        </div>
+                        <select id="customDistrict" required
+                               class="pl-10 block w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select a district</option>
+                            <option value="Tehri Garhwal">Tehri Garhwal</option>
+                            <option value="Dehradun">Dehradun</option>
+                            <option value="Haridwar">Haridwar</option>
+                            <option value="Pauri Garhwal">Pauri Garhwal</option>
+                            <option value="Rudraprayag">Rudraprayag</option>
+                            <option value="Chamoli">Chamoli</option>
+                            <option value="Pithoragarh">Pithoragarh</option>
+                            <option value="Almora">Almora</option>
+                            <option value="Nainital">Nainital</option>
+                            <option value="Udham Singh Nagar">Udham Singh Nagar</option>
+                            <option value="Champawat">Champawat</option>
+                            <option value="Bageshwar">Bageshwar</option>
+                            <option value="Uttarkashi">Uttarkashi</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
                     <label for="customEmail" class="block text-sm font-medium text-gray-700">Email</label>
                     <div class="mt-1 relative rounded-md shadow-sm">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1015,7 +1040,8 @@
                         username: adminData.username,
                         email: adminData.email,
                         password: adminData.password,
-                        adminId: adminData.adminId
+                        adminId: adminData.adminId,
+                        district: adminData.district
                     })
                 });
 
@@ -1060,7 +1086,8 @@
                     username: username,
                     email: email,
                     adminId: adminId,
-                    password: password
+                    password: password,
+                    district: 'Tehri Garhwal' // Default district for random admins
                 };
 
                 console.log('Attempting to create admin with data:', adminData);
@@ -1071,7 +1098,8 @@
                           `Username: ${username}\n` +
                           `Admin ID: ${adminId}\n` +
                           `Password: ${password}\n` +
-                          `Email: ${email}\n\n` +
+                          `Email: ${email}\n` +
+                          `District: ${adminData.district}\n\n` +
                           `Please save these credentials securely!`);
                 }
             } catch (error) {
@@ -1111,8 +1139,14 @@
                 username: document.getElementById('customUsername').value,
                 email: document.getElementById('customEmail').value,
                 adminId: document.getElementById('customAdminId').value,
-                password: document.getElementById('customPassword').value
+                password: document.getElementById('customPassword').value,
+                district: document.getElementById('customDistrict').value
             };
+
+            if (!adminData.district) {
+                alert('Please select a district');
+                return;
+            }
 
             console.log('Submitting custom admin form with data:', adminData);
             const success = await createAdmin(adminData);

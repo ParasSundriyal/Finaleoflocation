@@ -16,6 +16,7 @@ public class Occurrence {
     private String reporterId;
     private String reporterName;
     private String reporterPhone;
+    private String district;
     
     @Field("photoIds")
     private List<String> photoIds; // Store GridFS file IDs instead of URLs
@@ -84,6 +85,14 @@ public class Occurrence {
 
     public void setReporterPhone(String reporterPhone) {
         this.reporterPhone = reporterPhone;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
     }
 
     public List<String> getPhotoIds() {

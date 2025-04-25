@@ -18,6 +18,7 @@ public class MapMarker {
     private LocalDateTime lastModified;
     private String lastModifiedBy;
     private boolean enabled = true;
+    private String district; // District where the marker is located
 
     // Getters and Setters
     public String getId() {
@@ -106,5 +107,13 @@ public class MapMarker {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
     }
 } 

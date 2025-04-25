@@ -12,4 +12,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     boolean existsByEmail(String email);
     long countByRole(String role);
     List<User> findByRole(String role);
+    List<User> findByRoleAndDistrict(String role, String district);
+    long countByDistrict(String district);
+    List<User> findByDistrict(String district);
 } 

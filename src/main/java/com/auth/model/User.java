@@ -6,25 +6,45 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
+@Validated
 @Document(collection = "users")
 public class User implements UserDetails {
     @Id
     private String id;
 
     @Indexed(unique = true)
+    @NotBlank(message = "Username is required")
     private String username;
 
     @Indexed(unique = true)
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
+    @NotBlank(message = "Password is required")
     private String password;
+
+    @Pattern(regexp = "^\\d{10}$", message = "Mobile number must be 10 digits")
+    private String mobile;
+
+    @NotBlank(message = "District is required")
+    private String district;
+
+    private String area;
+
     private String role = "USER"; // Possible values: SUPERADMIN, ADMIN, USER
-    private String mobile; // Added mobile number field
     private LocalDateTime createdAt = LocalDateTime.now();
     private boolean enabled = true;
     private String createdBy; // ID of the admin who created this user
@@ -64,6 +84,22 @@ public class User implements UserDetails {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
     }
 
     public String getRole() {
@@ -151,5 +187,9 @@ public class User implements UserDetails {
 
     public boolean isAdmin() {
         return "ADMIN".equals(role);
+    }
+
+    public boolean isUser() {
+        return "USER".equals(role);
     }
 } 

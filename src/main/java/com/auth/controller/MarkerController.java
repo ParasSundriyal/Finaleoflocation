@@ -65,6 +65,8 @@ public class MarkerController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Only admins can create markers"));
             }
 
+            // Set the district from the admin's district
+            marker.setDistrict(user.getDistrict());
             marker.setCreatedBy(user.getId());
             marker.setCreatedAt(LocalDateTime.now());
             marker.setEnabled(true);
@@ -96,6 +98,11 @@ public class MarkerController {
                 return ResponseEntity.badRequest().body(Map.of("message", "You can only update your own markers"));
             }
 
+            // Verify the marker belongs to the admin's district
+            if (!existingMarker.getDistrict().equals(user.getDistrict()) && !user.isSuperAdmin()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "You can only update markers in your district"));
+            }
+
             existingMarker.setName(marker.getName());
             existingMarker.setDescription(marker.getDescription());
             existingMarker.setLatitude(marker.getLatitude());
@@ -103,6 +110,7 @@ public class MarkerController {
             existingMarker.setMarkerType(marker.getMarkerType());
             existingMarker.setLastModified(LocalDateTime.now());
             existingMarker.setLastModifiedBy(user.getId());
+            // District remains unchanged
 
             MapMarker updatedMarker = markerRepository.save(existingMarker);
             return ResponseEntity.ok(updatedMarker);
@@ -140,5 +148,15 @@ public class MarkerController {
     @GetMapping("/type/{type}")
     public ResponseEntity<List<MapMarker>> getMarkersByType(@PathVariable String type) {
         return ResponseEntity.ok(markerRepository.findByMarkerType(type));
+    }
+
+    @GetMapping("/district/{district}")
+    public ResponseEntity<?> getMarkersByDistrict(@PathVariable String district) {
+        try {
+            List<MapMarker> markers = markerRepository.findByDistrictAndEnabled(district, true);
+            return ResponseEntity.ok(markers);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Error fetching markers: " + e.getMessage()));
+        }
     }
 } 

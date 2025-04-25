@@ -452,8 +452,16 @@
                 if (response.ok) {
                     const userData = await response.json();
                     document.getElementById('username').textContent = userData.username;
-                    // Store user ID in session storage
+                    // Store user ID and district in session storage
                     sessionStorage.setItem('userId', userData.id);
+                    sessionStorage.setItem('userDistrict', userData.district);
+                    
+                    // Find district coordinates and center map
+                    const district = uttarakhandDistricts.find(d => d.name === userData.district);
+                    if (district) {
+                        map.setView([district.lat, district.lng], 11);
+                    }
+                    
                     loadMarkers();
                 } else {
                     window.location.href = 'login.html';
@@ -467,7 +475,8 @@
         // Load markers
         async function loadMarkers() {
             try {
-                const response = await fetch(`${config.apiBaseUrl}/api/markers`, {
+                const userDistrict = sessionStorage.getItem('userDistrict');
+                const response = await fetch(`${config.apiBaseUrl}/api/markers/district/${userDistrict}`, {
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                     }
@@ -483,6 +492,15 @@
                     // Update marker list
                     const markerList = document.getElementById('markerList');
                     markerList.innerHTML = '';
+
+                    if (markerData.length === 0) {
+                        markerList.innerHTML = `
+                            <div class="p-4 text-gray-500 text-center">
+                                No markers found in your district
+                            </div>
+                        `;
+                        return;
+                    }
 
                     markerData.forEach(data => {
                         if (!data.latitude || !data.longitude) return;

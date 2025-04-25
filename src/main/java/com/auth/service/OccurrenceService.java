@@ -1,12 +1,15 @@
 package com.auth.service;
 
 import com.auth.model.Occurrence;
+import com.auth.model.User;
 import com.auth.repository.OccurrenceRepository;
+import com.auth.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,26 +22,32 @@ public class OccurrenceService {
     @Autowired
     private GridFSService gridFSService;
 
-    public Occurrence createOccurrence(Occurrence occurrence, List<MultipartFile> photos) {
-        // Set current date and time
+    @Autowired
+    private UserService userService;
+
+    public List<Occurrence> getAllOccurrences(String userId) {
+        User currentUser = userService.getUserById(userId);
+        if (currentUser.getRole().equals("ADMIN")) {
+            return occurrenceRepository.findByDistrict(currentUser.getDistrict());
+        }
+        return occurrenceRepository.findAll();
+    }
+
+    public Occurrence createOccurrence(Occurrence occurrence, String userId, List<MultipartFile> photos) {
+        User currentUser = userService.getUserById(userId);
+        occurrence.setReporterId(userId);
+        occurrence.setDistrict(currentUser.getDistrict());
         occurrence.setReportedAt(LocalDateTime.now());
-        
-        // Set initial status
         occurrence.setStatus("PENDING");
         occurrence.setActiveOnMap(false);
-        
-        // Store photos in GridFS and get their IDs
+
+        // Handle photo uploads
         if (photos != null && !photos.isEmpty()) {
             List<String> photoIds = gridFSService.storeFiles(photos);
             occurrence.setPhotoIds(photoIds);
         }
-        
-        // Save the occurrence
-        return occurrenceRepository.save(occurrence);
-    }
 
-    public List<Occurrence> getAllOccurrences() {
-        return occurrenceRepository.findAll();
+        return occurrenceRepository.save(occurrence);
     }
 
     public Optional<Occurrence> getOccurrenceById(String id) {

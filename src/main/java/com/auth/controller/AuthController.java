@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -67,6 +68,10 @@ public class AuthController {
                 logger.warn("Signup failed: Password is required");
                 return ResponseEntity.badRequest().body(Map.of("message", "Password is required"));
             }
+            if (user.getDistrict() == null || user.getDistrict().trim().isEmpty()) {
+                logger.warn("Signup failed: District is required");
+                return ResponseEntity.badRequest().body(Map.of("message", "District is required"));
+            }
 
             // Check if username already exists
             if (userRepository.findByUsername(user.getUsername()).isPresent()) {
@@ -102,7 +107,7 @@ public class AuthController {
             user.setRole("USER");
             user.setCreatedAt(LocalDateTime.now());
             
-            // Encode password and save user
+            // Encode password
             String encodedPassword = passwordEncoder.encode(user.getPassword());
             user.setPassword(encodedPassword);
             
@@ -179,18 +184,29 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Only superadmin can create admins"));
             }
 
+            // Validate district
+            if (admin.getDistrict() == null || admin.getDistrict().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "District is required for admin"));
+            }
+
             // Set admin role and other details
             admin.setRole("ADMIN");
             admin.setCreatedAt(LocalDateTime.now());
             admin.setCreatedBy(currentUser.getId());
             admin.setPassword(passwordEncoder.encode(admin.getPassword()));
 
+            // Set a default mobile number if not provided
+            if (admin.getMobile() == null || admin.getMobile().trim().isEmpty()) {
+                admin.setMobile("0000000000");
+            }
+
             User savedAdmin = userRepository.save(admin);
-            logger.info("Admin created successfully by superadmin: {}", savedAdmin.getUsername());
+            logger.info("Admin created successfully by superadmin: {} for district: {}", savedAdmin.getUsername(), savedAdmin.getDistrict());
 
             return ResponseEntity.ok(Map.of(
                 "message", "Admin created successfully",
-                "username", savedAdmin.getUsername()
+                "username", savedAdmin.getUsername(),
+                "district", savedAdmin.getDistrict()
             ));
         } catch (Exception e) {
             logger.error("Error creating admin", e);
@@ -210,13 +226,16 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Only superadmin can view admin list"));
             }
 
-            List<Map<String, Object>> admins = userRepository.findAll().stream()
-                .filter(user -> "ADMIN".equals(user.getRole()))
+            // Get admins only for superadmin's district
+            List<Map<String, Object>> admins = userRepository.findByRoleAndDistrict("ADMIN", currentUser.getDistrict())
+                .stream()
                 .map(admin -> {
                     Map<String, Object> adminData = new HashMap<>();
                     adminData.put("id", admin.getId());
                     adminData.put("username", admin.getUsername());
                     adminData.put("email", admin.getEmail());
+                    adminData.put("district", admin.getDistrict());
+                    adminData.put("area", admin.getArea());
                     adminData.put("createdAt", admin.getCreatedAt());
                     return adminData;
                 })
@@ -391,6 +410,123 @@ public class AuthController {
         } catch (Exception e) {
             logger.error("Error fetching users", e);
             return ResponseEntity.badRequest().body(Map.of("message", "Error fetching users: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/statistics/district/{district}")
+    public ResponseEntity<?> getDistrictStatistics(
+            @PathVariable String district,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String username = jwtUtil.extractUsername(token.substring(7));
+            User currentUser = userRepository.findByUsername(username).orElseThrow();
+
+            // Verify the admin belongs to the requested district
+            if (!currentUser.isAdmin() || !currentUser.getDistrict().equals(district)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Unauthorized to view this district's statistics"));
+            }
+
+            // Get district statistics
+            long totalUsers = userRepository.countByDistrict(district);
+            long totalMarkers = markerRepository.countByDistrict(district);
+
+            Map<String, Object> statistics = new HashMap<>();
+            statistics.put("totalUsers", totalUsers);
+            statistics.put("totalMarkers", totalMarkers);
+            statistics.put("area", "10,000 sq km"); // This should be fetched from a district database
+
+            return ResponseEntity.ok(statistics);
+        } catch (Exception e) {
+            logger.error("Error fetching district statistics", e);
+            return ResponseEntity.badRequest().body(Map.of("message", "Error fetching district statistics: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/users/district/{district}")
+    public ResponseEntity<?> getDistrictUsers(
+            @PathVariable String district,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String username = jwtUtil.extractUsername(token.substring(7));
+            User currentUser = userRepository.findByUsername(username).orElseThrow();
+
+            // Verify the admin belongs to the requested district
+            if (!currentUser.isAdmin() || !currentUser.getDistrict().equals(district)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Unauthorized to view this district's users"));
+            }
+
+            List<Map<String, Object>> users = userRepository.findByDistrict(district).stream()
+                .map(user -> {
+                    Map<String, Object> userMap = new HashMap<>();
+                    userMap.put("username", user.getUsername());
+                    userMap.put("email", user.getEmail());
+                    userMap.put("area", user.getArea());
+                    userMap.put("createdAt", user.getCreatedAt());
+                    return userMap;
+                })
+                .collect(Collectors.toList());
+
+            return ResponseEntity.ok(users);
+        } catch (Exception e) {
+            logger.error("Error fetching district users", e);
+            return ResponseEntity.badRequest().body(Map.of("message", "Error fetching district users: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/statistics/district/{district}/reports")
+    public ResponseEntity<?> getDistrictReports(
+            @PathVariable String district,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String username = jwtUtil.extractUsername(token.substring(7));
+            User currentUser = userRepository.findByUsername(username).orElseThrow();
+
+            // Verify the admin belongs to the requested district
+            if (!currentUser.isAdmin() || !currentUser.getDistrict().equals(district)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Unauthorized to view this district's reports"));
+            }
+
+            // Get activity data (last 7 days)
+            LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+            List<MapMarker> recentMarkers = markerRepository.findByDistrictAndCreatedAtAfter(district, sevenDaysAgo);
+
+            // Process activity data
+            Map<String, Object> activityData = new HashMap<>();
+            List<String> labels = new ArrayList<>();
+            List<Long> markerCounts = new ArrayList<>();
+            
+            // Group markers by day
+            Map<LocalDate, Long> dailyCounts = recentMarkers.stream()
+                .collect(Collectors.groupingBy(
+                    marker -> marker.getCreatedAt().toLocalDate(),
+                    Collectors.counting()
+                ));
+
+            // Fill in the last 7 days
+            for (int i = 6; i >= 0; i--) {
+                LocalDate date = LocalDate.now().minusDays(i);
+                labels.add(date.format(java.time.format.DateTimeFormatter.ofPattern("MM/dd")));
+                markerCounts.add(dailyCounts.getOrDefault(date, 0L));
+            }
+
+            activityData.put("labels", labels);
+            activityData.put("markers", markerCounts);
+
+            // Get marker distribution
+            Map<String, Long> markerDistribution = markerRepository.findByDistrict(district).stream()
+                .collect(Collectors.groupingBy(
+                    MapMarker::getMarkerType,
+                    Collectors.counting()
+                ));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("activityData", activityData);
+            response.put("markerDistribution", markerDistribution);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error fetching district reports", e);
+            return ResponseEntity.badRequest().body(Map.of("message", "Error fetching district reports: " + e.getMessage()));
         }
     }
 } 

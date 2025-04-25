@@ -161,6 +161,28 @@
                     <p class="text-sm text-gray-500 mt-1">Enter 10-digit mobile number</p>
                 </div>
                 <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="district">
+                        District
+                    </label>
+                    <select class="input-field shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            id="district" required>
+                        <option value="">Select your district</option>
+                        <option value="Tehri Garhwal">Tehri Garhwal</option>
+                        <option value="Dehradun">Dehradun</option>
+                        <option value="Pauri Garhwal">Pauri Garhwal</option>
+                        <option value="Uttarkashi">Uttarkashi</option>
+                        <option value="Chamoli">Chamoli</option>
+                        <option value="Rudraprayag">Rudraprayag</option>
+                        <option value="Pithoragarh">Pithoragarh</option>
+                        <option value="Almora">Almora</option>
+                        <option value="Nainital">Nainital</option>
+                        <option value="Bageshwar">Bageshwar</option>
+                        <option value="Champawat">Champawat</option>
+                        <option value="Haridwar">Haridwar</option>
+                        <option value="Udham Singh Nagar">Udham Singh Nagar</option>
+                    </select>
+                </div>
+                <div>
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
                         Password
                     </label>
@@ -189,6 +211,7 @@
             const username = document.getElementById('username').value;
             const email = document.getElementById('email').value;
             const mobile = document.getElementById('mobile').value;
+            const district = document.getElementById('district').value;
             const password = document.getElementById('password').value;
             const errorMessageDiv = document.getElementById('errorMessage');
 
@@ -206,10 +229,16 @@
                 return;
             }
 
+            if (!district) {
+                showError('Please select your district');
+                return;
+            }
+
             const payload = {
                 username: username,
                 email: email,
                 mobile: mobile,
+                district: district,
                 password: password
             };
 

@@ -37,10 +37,19 @@ public class OccurrenceController {
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<?> createOccurrence(
             @RequestPart(value = "occurrence") String occurrenceJson,
-            @RequestPart(value = "photos", required = false) List<MultipartFile> photos) {
+            @RequestPart(value = "photos", required = false) List<MultipartFile> photos,
+            @RequestHeader("Authorization") String token) {
         try {
             logger.info("Received occurrence creation request");
             logger.debug("Occurrence JSON: {}", occurrenceJson);
+            
+            // Extract user ID from token
+            String userId = null;
+            if (token != null && token.startsWith("Bearer ")) {
+                String username = jwtUtil.extractUsername(token.substring(7));
+                User user = userRepository.findByUsername(username).orElseThrow();
+                userId = user.getId();
+            }
             
             ObjectMapper mapper = new ObjectMapper();
             mapper.findAndRegisterModules(); // This helps with LocalDateTime serialization
@@ -81,15 +90,9 @@ public class OccurrenceController {
                 }
             }
             
-            // Set default values
-            occurrence.setReporterId(occurrence.getReporterId() != null ? occurrence.getReporterId() : "anonymous");
-            occurrence.setStatus("PENDING");
-            occurrence.setReportedAt(LocalDateTime.now());
-            occurrence.setActiveOnMap(false); // Initially set to false until verified
-            
             // Create the occurrence
             logger.info("Creating occurrence with title: {}", occurrence.getTitle());
-            Occurrence savedOccurrence = occurrenceService.createOccurrence(occurrence, photos);
+            Occurrence savedOccurrence = occurrenceService.createOccurrence(occurrence, userId, photos);
             logger.info("Occurrence created successfully with ID: {}", savedOccurrence.getId());
             
             return ResponseEntity.ok(savedOccurrence);
@@ -106,8 +109,15 @@ public class OccurrenceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Occurrence>> getAllOccurrences() {
-        return ResponseEntity.ok(occurrenceService.getAllOccurrences());
+    public ResponseEntity<List<Occurrence>> getAllOccurrences(@RequestHeader("Authorization") String token) {
+        try {
+            String username = jwtUtil.extractUsername(token.substring(7));
+            User user = userRepository.findByUsername(username).orElseThrow();
+            return ResponseEntity.ok(occurrenceService.getAllOccurrences(user.getId()));
+        } catch (Exception e) {
+            logger.error("Error fetching occurrences", e);
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @GetMapping("/{id}")

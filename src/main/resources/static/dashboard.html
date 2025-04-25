@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>User Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -27,17 +27,122 @@
             border-radius: 0.5rem;
             z-index: 1;
         }
+
+        /* Mobile-first responsive styles */
         @media (max-width: 768px) {
             #map {
-                height: calc(100vh - 150px);
+                height: calc(100vh - 180px);
+                border-radius: 0;
             }
             .marker-list {
                 max-height: 200px;
             }
+            .district-search {
+                flex: 1;
+                margin: 0 1rem;
+            }
+            #menuButton {
+                display: block;
+                padding: 0.5rem;
+                margin-left: 0.5rem;
+            }
+            .nav-buttons {
+                display: flex;
+                align-items: center;
+            }
+            #mobileMenu {
+                background-color: transparent;
+                transition: all 0.3s ease-in-out;
+            }
+            #mobileMenu .fixed {
+                transform: translateX(100%);
+                transition: transform 0.3s ease-in-out;
+                box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            }
+            #mobileMenu:not(.hidden) .fixed {
+                transform: translateX(0);
+            }
+            .camera-modal-content {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+            }
+            .camera-preview {
+                height: 50vh;
+            }
+            #occurrenceModal .modal-content {
+                margin: 0;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .photo-preview {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+            .photo-preview img {
+                width: 80px;
+                height: 80px;
+            }
+            #mobileMenu .transform {
+                transform: translateX(100%);
+            }
+            #mobileMenu.active .transform {
+                transform: translateX(0);
+            }
+            .nav-buttons {
+                gap: 0.5rem;
+            }
+            #mobileSoochnaDropdown {
+                position: relative;
+                width: 100%;
+                max-height: calc(100vh - 300px);
+                overflow-y: auto;
+                border: 1px solid #e5e7eb;
+                background-color: #f9fafb;
+                border-radius: 0.5rem;
+            }
+            
+            #mobile-soochna-updates {
+                background-color: transparent;
+            }
+            
+            #mobile-soochna-updates .bg-white {
+                background-color: white;
+                border: 1px solid #e5e7eb;
+                margin-bottom: 0.5rem;
+            }
+            
+            .soochna-item {
+                border-bottom: 1px solid #e5e7eb;
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            
+            .soochna-item:last-child {
+                border-bottom: none;
+                margin-bottom: 0;
+                padding-bottom: 0;
+            }
         }
+
+        /* Tablet styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #map {
+                height: calc(100vh - 160px);
+            }
+            .district-search {
+                max-width: 300px;
+            }
+            #soochnaDropdown {
+                width: 400px;
+            }
+        }
+
+        /* Common styles */
         .marker-list {
             max-height: 400px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .marker-item {
             display: flex;
@@ -53,13 +158,18 @@
         .marker-icon {
             font-size: 1.5rem;
             margin-right: 1rem;
+            flex-shrink: 0;
         }
         .marker-info {
             flex: 1;
+            min-width: 0;
         }
         .marker-name {
             font-weight: 600;
             color: #1f2937;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .marker-type {
             font-size: 0.875rem;
@@ -77,6 +187,7 @@
             margin-top: 0.5rem;
             max-height: 300px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .photo-preview img {
             width: 100px;
@@ -84,7 +195,9 @@
             object-fit: cover;
             border-radius: 0.375rem;
         }
-        .camera-modal {
+
+        /* Modal styles */
+        .camera-modal, .camera-capture-modal {
             position: fixed;
             inset: 0;
             background-color: rgba(0, 0, 0, 0.75);
@@ -93,11 +206,11 @@
             justify-content: center;
             z-index: 20000;
         }
-        .camera-modal-content {
+        .camera-modal-content, .camera-capture-content {
             background: white;
             padding: 1rem;
             border-radius: 0.5rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 32rem;
             margin: 1rem;
@@ -119,7 +232,7 @@
             background: white;
             border-radius: 9999px;
             padding: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s;
         }
         .capture-button:hover {
@@ -138,6 +251,8 @@
         .close-button:hover {
             background-color: #f3f4f6;
         }
+
+        /* Occurrence Modal */
         #occurrenceModal {
             position: fixed;
             inset: 0;
@@ -179,49 +294,90 @@
             padding: 1rem;
             display: flex;
             justify-content: flex-end;
-            border-bottom-left-radius: 0.5rem;
-            border-bottom-right-radius: 0.5rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
         #occurrenceMap {
-            height: 400px;
+            height: 300px;
             width: 100%;
-        }
-        .leaflet-container {
-            z-index: 1;
-        }
-        .leaflet-control {
-            z-index: 400;
-        }
-        .leaflet-popup {
-            z-index: 600;
-        }
-        nav {
-            position: relative;
-            z-index: 1000;
-        }
-        #occurrenceModal {
-            z-index: 1000;
-        }
-        
-        /* Add new styles for camera modal */
-        .camera-capture-modal {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.75);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000; /* Higher than occurrence modal */
-        }
-        
-        .camera-capture-content {
-            position: relative;
-            background: white;
-            padding: 1rem;
             border-radius: 0.5rem;
-            width: 100%;
-            max-width: 640px;
-            margin: 1rem;
+        }
+
+        /* Z-index management */
+        .leaflet-container { z-index: 1; }
+        .leaflet-control { z-index: 400; }
+        .leaflet-popup { z-index: 600; }
+        nav { z-index: 1000; }
+        #occurrenceModal { z-index: 1000; }
+        .camera-capture-modal { z-index: 2000; }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) {
+            .marker-item {
+                padding: 1rem 0.5rem;
+            }
+            .capture-button {
+                padding: 1.25rem;
+            }
+            .close-button {
+                padding: 0.75rem;
+            }
+            select, button {
+                min-height: 44px;
+            }
+        }
+
+        /* Custom popup styles */
+        .custom-popup .leaflet-popup-content-wrapper {
+            border-radius: 0.5rem;
+        }
+        .custom-popup .leaflet-popup-content {
+            margin: 0;
+            min-width: 200px;
+        }
+        .marker-item {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .marker-item:last-child {
+            border-bottom: none;
+        }
+        .marker-details p {
+            margin-top: 0.25rem;
+        }
+
+        /* Add styles for pulse animation */
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.3;
+                transform: scale(1.2);
+            }
+            100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+        }
+
+        .pulse-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* Add styles for verified areas */
+        @keyframes subtleOpacity {
+            0% {
+                opacity: 0.4;
+            }
+            100% {
+                opacity: 0.4;
+            }
+        }
+
+        .verified-area {
+            animation: none;
+            opacity: 0.4;
         }
     </style>
 </head>
@@ -230,7 +386,7 @@
         <div class="max-w-6xl mx-auto px-4">
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center">
-                    <span class="text-xl font-bold text-gray-800">TehriMap</span>
+                    <span class="text-xl font-bold text-gray-800">Uttarakhand Map</span>
                 </div>
                 <div class="district-search mx-4">
                     <select id="districtSearch" 
@@ -238,8 +394,10 @@
                         <option value="">Select a district...</option>
                     </select>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button onclick="showOccurrenceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <div class="nav-buttons flex items-center space-x-4">
+                    <!-- Desktop Menu -->
+                    <div class="hidden lg:flex items-center space-x-4">
+                        <button onclick="showOccurrenceModal()" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center">
                         <i class="fas fa-plus-circle mr-2"></i>सूचना दर्ज करें
                     </button>
                     <div class="relative">
@@ -260,6 +418,51 @@
                     <button onclick="logout()" class="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium">
                         <i class="fas fa-sign-out-alt mr-2"></i>Logout
                     </button>
+                </div>
+
+                    <!-- Mobile Menu Button -->
+                    <button id="menuButton" class="block lg:hidden p-2 text-gray-600 hover:text-gray-800 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+
+                    <!-- Mobile Menu Panel -->
+                    <div id="mobileMenu" class="hidden fixed inset-0 z-50 lg:hidden">
+                        <div class="fixed right-0 top-0 w-64 h-full bg-white">
+                            <div class="p-4">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="text-lg font-semibold">Menu</h3>
+                                    <button id="closeMenu" class="text-gray-600 hover:text-gray-800">
+                                        <i class="fas fa-times text-xl"></i>
+                                    </button>
+                                </div>
+                                <div class="space-y-4">
+                                    <button onclick="showOccurrenceModal()" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center">
+                                        <i class="fas fa-plus-circle mr-2"></i>सूचना दर्ज करें
+                                    </button>
+                                    <div class="relative">
+                                        <button onclick="toggleMobileSoochnaDropdown()" class="w-full bg-white text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center">
+                                            <i class="fas fa-bell mr-2"></i>सूचना अपडेट
+                                            <span id="mobileSoochnaCount" class="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-1 hidden">0</span>
+                                        </button>
+                                        <div id="mobileSoochnaDropdown" class="hidden mt-2 bg-white rounded-lg">
+                                            <div class="p-4">
+                                                <h3 class="text-lg font-semibold text-gray-800 mb-4">सूचना अपडेट</h3>
+                                                <div id="mobile-soochna-updates" class="space-y-4">
+                                                    <!-- Mobile Soochna items will be rendered here -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pt-4 border-t border-gray-200">
+                                        <span id="mobileUsername" class="block text-gray-600 mb-2"></span>
+                                        <button onclick="logout()" class="w-full text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium flex items-center justify-center">
+                                            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -367,6 +570,7 @@
         // Global variables
         let map;
         let markers = [];
+        let verifiedAreas = [];  // Array to store verified area circles
         let occurrenceMap = null;
         let occurrenceMarker = null;
         const uttarakhandDistricts = [
@@ -438,6 +642,9 @@
                     map.setView([selectedDistrict.lat, selectedDistrict.lng], 11);
                 }
             });
+
+            // Load verified occurrences and show highlighted areas
+            loadVerifiedOccurrences();
         }
 
         // Load user info
@@ -451,19 +658,42 @@
                 
                 if (response.ok) {
                     const userData = await response.json();
+                    console.log('User Data:', userData);
+                    
+                    // Update username display
                     document.getElementById('username').textContent = userData.username;
+                    document.getElementById('mobileUsername').textContent = userData.username;
+                    
                     // Store user ID and district in session storage
                     sessionStorage.setItem('userId', userData.id);
                     sessionStorage.setItem('userDistrict', userData.district);
                     
+                    // Update district dropdown to show user's district
+                    const districtSelect = document.getElementById('districtSearch');
+                    if (districtSelect && userData.district) {
+                        const userDistrictOption = Array.from(districtSelect.options).find(
+                            option => option.value === userData.district
+                        );
+                        if (userDistrictOption) {
+                            userDistrictOption.selected = true;
+                        }
+                    }
+                    
                     // Find district coordinates and center map
                     const district = uttarakhandDistricts.find(d => d.name === userData.district);
                     if (district) {
+                        console.log('Setting map view to district:', district);
                         map.setView([district.lat, district.lng], 11);
+                } else {
+                        console.warn('District not found in coordinates list:', userData.district);
                     }
                     
-                    loadMarkers();
+                    // Load markers after setting district
+                    await loadMarkers();
                 } else {
+                    console.error('Failed to load user info:', response.status);
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
                     window.location.href = 'login.html';
                 }
             } catch (error) {
@@ -476,14 +706,24 @@
         async function loadMarkers() {
             try {
                 const userDistrict = sessionStorage.getItem('userDistrict');
-                const response = await fetch(`${config.apiBaseUrl}/api/markers/district/${userDistrict}`, {
+                console.log('Loading markers for district:', userDistrict); // Debug log
+
+                if (!userDistrict) {
+                    console.error('User district not found');
+                    return;
+                }
+
+                const response = await fetch(`${config.apiBaseUrl}/api/markers/district/${encodeURIComponent(userDistrict)}`, {
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                     }
                 });
 
+                console.log('Marker API Response Status:', response.status);
+
                 if (response.ok) {
                     const markerData = await response.json();
+                    console.log('Marker Data:', markerData);
                     
                     // Clear existing markers
                     markers.forEach(marker => marker.remove());
@@ -493,41 +733,75 @@
                     const markerList = document.getElementById('markerList');
                     markerList.innerHTML = '';
 
-                    if (markerData.length === 0) {
+                    if (!markerData || markerData.length === 0) {
                         markerList.innerHTML = `
                             <div class="p-4 text-gray-500 text-center">
-                                No markers found in your district
+                                <h2 class="text-xl font-semibold mb-2">मौजूदा स्थान</h2>
+                                <p>आपके जिले में कोई मार्कर नहीं मिला</p>
+                                <p class="text-sm text-gray-400 mt-2">जिला: ${userDistrict}</p>
                             </div>
                         `;
                         return;
                     }
 
+                    // Sort markers by creation date (newest first)
+                    markerData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
                     markerData.forEach(data => {
-                        if (!data.latitude || !data.longitude) return;
+                        console.log('Processing marker:', data); // Debug log
+
+                        if (!data.latitude || !data.longitude) {
+                            console.log('Skipping marker due to missing coordinates:', data);
+                            return;
+                        }
 
                         // Add marker to map
                         const marker = L.marker([data.latitude, data.longitude], {
-                            icon: createCustomIcon(data.markerType)
+                            icon: createCustomIcon(data.markerType || 'CUSTOM')
                         })
                         .bindPopup(`
-                            <div class="p-2">
-                                <h3 class="font-bold">${data.name}</h3>
-                                <p class="text-gray-600">${data.description}</p>
-                                <p class="text-sm text-gray-500 mt-2">Type: ${data.markerType.replace('_', ' ')}</p>
+                            <div class="p-3">
+                                <h3 class="font-bold text-lg">${data.name || 'Unnamed Location'}</h3>
+                                <p class="text-gray-600 mt-1">${data.description || ''}</p>
+                                <div class="mt-2 text-sm">
+                                    <p class="text-gray-500"><i class="fas fa-map-marker-alt mr-1"></i> ${data.district || userDistrict}</p>
+                                    ${data.area ? `<p class="text-gray-500"><i class="fas fa-location-arrow mr-1"></i> ${data.area}</p>` : ''}
+                                    <p class="text-gray-500 mt-1"><i class="fas fa-tag mr-1"></i> ${(data.markerType || 'CUSTOM').replace(/_/g, ' ')}</p>
                             </div>
-                        `)
+                                ${data.createdAt ? `
+                                    <p class="text-xs text-gray-400 mt-2">
+                                        <i class="fas fa-clock mr-1"></i> 
+                                        ${new Date(data.createdAt).toLocaleDateString('hi-IN', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </p>
+                                ` : ''}
+                            </div>
+                        `, {
+                            maxWidth: 300,
+                            className: 'custom-popup'
+                        })
                         .addTo(map);
                         
                         markers.push(marker);
+                        console.log('Added marker to map:', marker); // Debug log
 
-                        // Add to list
+                        // Add to list with enhanced styling
                         const listItem = document.createElement('div');
-                        listItem.className = 'marker-item';
+                        listItem.className = 'marker-item hover:bg-gray-50 transition-colors duration-200';
                         listItem.innerHTML = `
-                            <span class="marker-icon">${markerIcons[data.markerType] || '📍'}</span>
-                            <div class="marker-info">
-                                <div class="marker-name">${data.name}</div>
-                                <div class="marker-type">${data.markerType.replace('_', ' ')}</div>
+                            <div class="flex items-start p-3 cursor-pointer">
+                                <span class="marker-icon text-2xl">${markerIcons[data.markerType] || '📍'}</span>
+                                <div class="marker-info ml-3 flex-1">
+                                    <div class="marker-name font-semibold text-gray-800">${data.name || 'Unnamed Location'}</div>
+                                    <div class="marker-details text-sm text-gray-600">
+                                        <p><i class="fas fa-map-marker-alt mr-1"></i> ${data.district || userDistrict}</p>
+                                        ${data.area ? `<p><i class="fas fa-location-arrow mr-1"></i> ${data.area}</p>` : ''}
+                                        <p class="marker-type"><i class="fas fa-tag mr-1"></i> ${(data.markerType || 'CUSTOM').replace(/_/g, ' ')}</p>
+                                    </div>
+                                </div>
                             </div>
                         `;
                         listItem.addEventListener('click', () => {
@@ -536,11 +810,38 @@
                         });
                         markerList.appendChild(listItem);
                     });
+
+                    // Center map on district if markers exist
+                    if (markers.length > 0) {
+                        console.log('Centering map on markers:', markers.length); // Debug log
+                        const bounds = L.featureGroup(markers).getBounds();
+                        map.fitBounds(bounds, { padding: [50, 50] });
+                    } else {
+                        // If no markers, center on district coordinates
+                        const district = uttarakhandDistricts.find(d => d.name === userDistrict);
+                        if (district) {
+                            console.log('Centering map on district:', district); // Debug log
+                            map.setView([district.lat, district.lng], 11);
+                        }
+                    }
                 } else {
                     console.error('Failed to load markers:', response.status);
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    document.getElementById('markerList').innerHTML = `
+                        <div class="p-4 text-red-500 text-center">
+                            <p>मार्कर लोड करने में त्रुटि हुई</p>
+                            <p class="text-sm mt-2">जिला: ${userDistrict}</p>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Error loading markers:', error);
+                document.getElementById('markerList').innerHTML = `
+                    <div class="p-4 text-red-500 text-center">
+                        मार्कर लोड करने में त्रुटि हुई
+                    </div>
+                `;
             }
         }
 
@@ -559,20 +860,8 @@
                 return;
             }
             
-            // Add click handler programmatically
-            const reportButton = document.querySelector('button[onclick="showOccurrenceModal()"]');
-            if (reportButton) {
-                console.log('Report button found');
-                reportButton.addEventListener('click', function(e) {
-                    console.log('Button clicked');
-                    showOccurrenceModal();
-                });
-            } else {
-                console.log('Report button not found');
-            }
-            
             initMap();
-            loadUserInfo();
+            loadUserInfo(); // This will also load markers after user info is loaded
         });
 
         function initOccurrenceModal() {
@@ -826,24 +1115,283 @@
             dropdown.classList.toggle('hidden');
         }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('soochnaDropdown');
-            const soochnaButton = document.getElementById('soochnaButton');
+        function toggleMobileSoochnaDropdown() {
+            const dropdown = document.getElementById('mobileSoochnaDropdown');
+            dropdown.classList.toggle('hidden');
             
-            if (!dropdown.contains(event.target) && !soochnaButton.contains(event.target)) {
-                dropdown.classList.add('hidden');
+            // Scroll the dropdown into view when opened
+            if (!dropdown.classList.contains('hidden')) {
+                dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-        });
+        }
 
         // Update notification count
         function updateSoochnaCount(count) {
-            const countElement = document.getElementById('soochnaCount');
+            const desktopCount = document.getElementById('soochnaCount');
+            const mobileCount = document.getElementById('mobileSoochnaCount');
+            
             if (count > 0) {
-                countElement.textContent = count;
-                countElement.classList.remove('hidden');
+                if (desktopCount) {
+                    desktopCount.textContent = count;
+                    desktopCount.classList.remove('hidden');
+                }
+                if (mobileCount) {
+                    mobileCount.textContent = count;
+                    mobileCount.classList.remove('hidden');
+                }
             } else {
-                countElement.classList.add('hidden');
+                if (desktopCount) desktopCount.classList.add('hidden');
+                if (mobileCount) mobileCount.classList.add('hidden');
+            }
+        }
+
+        // Function to update both desktop and mobile soochna updates
+        function updateSoochnaContent(updates) {
+            const desktopContainer = document.getElementById('soochna-updates');
+            const mobileContainer = document.getElementById('mobile-soochna-updates');
+            
+            if (desktopContainer) {
+                desktopContainer.innerHTML = '';
+                updates.forEach(update => {
+                    desktopContainer.appendChild(createSoochnaItem(update));
+                });
+            }
+            
+            if (mobileContainer) {
+                mobileContainer.innerHTML = '';
+                updates.forEach(update => {
+                    mobileContainer.appendChild(createSoochnaItem(update));
+                });
+            }
+        }
+
+        function createSoochnaItem(update) {
+            const div = document.createElement('div');
+            div.className = 'bg-gray-50 p-3 rounded-lg';
+            div.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-900">${update.title}</h4>
+                        <p class="text-sm text-gray-600">${update.description}</p>
+                        <div class="mt-1 text-xs text-gray-500">
+                            <span>${update.location}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const desktopDropdown = document.getElementById('soochnaDropdown');
+            const mobileDropdown = document.getElementById('mobileSoochnaDropdown');
+            const soochnaButton = document.getElementById('soochnaButton');
+            
+            if (desktopDropdown && !desktopDropdown.contains(event.target) && !soochnaButton.contains(event.target)) {
+                desktopDropdown.classList.add('hidden');
+            }
+            
+            if (mobileDropdown && !mobileDropdown.contains(event.target) && !event.target.closest('[onclick="toggleMobileSoochnaDropdown()"]')) {
+                mobileDropdown.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.getElementById('menuButton');
+            const mobileMenu = document.getElementById('mobileMenu');
+            const closeMenu = document.getElementById('closeMenu');
+
+            function toggleMenu() {
+                mobileMenu.classList.toggle('hidden');
+                document.body.classList.toggle('overflow-hidden');
+            }
+
+            menuButton.addEventListener('click', toggleMenu);
+            closeMenu.addEventListener('click', toggleMenu);
+
+            // Sync username between desktop and mobile
+            const username = document.getElementById('username');
+            const mobileUsername = document.getElementById('mobileUsername');
+            if (username && mobileUsername) {
+                const updateUsernames = () => {
+                    mobileUsername.textContent = username.textContent;
+                };
+                updateUsernames();
+                const observer = new MutationObserver(updateUsernames);
+                observer.observe(username, { childList: true, characterData: true, subtree: true });
+            }
+
+            // Close menu when clicking menu items
+            const menuItems = mobileMenu.querySelectorAll('button:not(#closeMenu)');
+            menuItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (!item.closest('[onclick="toggleMobileSoochnaDropdown()"]')) {
+                        toggleMenu();
+                    }
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!mobileMenu.contains(event.target) && !menuButton.contains(event.target) && !mobileMenu.classList.contains('hidden')) {
+                    toggleMenu();
+                }
+            });
+
+            // Prevent clicks inside menu from closing it
+            mobileMenu.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
+
+        // Add district selection modal HTML after the occurrence modal
+        function showDistrictSelectionModal() {
+            // Create modal if it doesn't exist
+            let modal = document.getElementById('districtSelectionModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'districtSelectionModal';
+                modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+                modal.innerHTML = `
+                    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                        <div class="mt-3 text-center">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">अपना जिला चुनें</h3>
+                            <div class="mt-2 px-7 py-3">
+                                <p class="text-sm text-gray-500">
+                                    कृपया अपना जिला चुनें जिससे आप संबंधित हैं
+                                </p>
+                                <select id="districtSelectionDropdown" class="mt-4 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">जिला चुनें...</option>
+                                    ${uttarakhandDistricts.map(d => `<option value="${d.name}">${d.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="items-center px-4 py-3">
+                                <button id="confirmDistrictButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                                    पुष्टि करें
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                // Add event listener to the confirm button
+                document.getElementById('confirmDistrictButton').addEventListener('click', async () => {
+                    const selectedDistrict = document.getElementById('districtSelectionDropdown').value;
+                    if (!selectedDistrict) {
+                        alert('कृपया एक जिला चुनें');
+                        return;
+                    }
+
+                    try {
+                        // Update user's district in the backend
+                        const response = await fetch(`${config.apiBaseUrl}/api/auth/update-district`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ district: selectedDistrict })
+                        });
+
+                        if (response.ok) {
+                            sessionStorage.setItem('userDistrict', selectedDistrict);
+                            modal.remove();
+                            // Reload user info to update everything
+                            await loadUserInfo();
+                        } else {
+                            throw new Error('Failed to update district');
+                        }
+                    } catch (error) {
+                        console.error('Error updating district:', error);
+                        alert('जिला अपडेट करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
+                    }
+                });
+            }
+
+            modal.style.display = 'block';
+        }
+
+        async function loadVerifiedOccurrences() {
+            try {
+                const response = await fetch(`${config.apiBaseUrl}/api/occurrences/verified`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    console.error('Failed to load verified occurrences:', response.status);
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error('Failed to load verified occurrences');
+                }
+
+                const verifiedOccurrences = await response.json();
+                console.log('Loaded verified occurrences:', verifiedOccurrences);
+                
+                // Clear existing verified areas
+                verifiedAreas.forEach(circle => map.removeLayer(circle));
+                verifiedAreas = [];
+
+                // Add new verified areas
+                verifiedOccurrences.forEach(occurrence => {
+                    const verifiedAt = new Date(occurrence.verifiedAt);
+                    const now = new Date();
+                    const hoursSinceVerification = (now - verifiedAt) / (1000 * 60 * 60);
+
+                    // Only show areas verified within last 24 hours
+                    if (hoursSinceVerification <= 24) {
+                        const circle = L.circle([occurrence.latitude, occurrence.longitude], {
+                            color: 'red',
+                            fillColor: '#f03',
+                            fillOpacity: 0.4,
+                            opacity: 0.8,
+                            radius: 500  // 500 meters radius
+                        }).addTo(map);
+
+                        // Add static class instead of pulse animation
+                        circle.getElement().classList.add('verified-area');
+                        
+                        verifiedAreas.push(circle);
+
+                        // Create a detailed popup with occurrence information
+                        const hoursAgo = Math.floor(hoursSinceVerification);
+                        const minutesAgo = Math.floor((hoursSinceVerification - hoursAgo) * 60);
+                        const verificationTime = `${hoursAgo}h ${minutesAgo}m ago`;
+                        
+                        const popupContent = `
+                            <div class="p-3 max-w-sm">
+                                <h3 class="font-bold text-lg mb-2">${occurrence.title || 'Untitled Occurrence'}</h3>
+                                <p class="text-gray-600 mb-2">${occurrence.description || 'No description available'}</p>
+                                <div class="text-sm text-gray-500">
+                                    <p><i class="fas fa-user mr-1"></i> Reported by: ${occurrence.reporterName || 'Anonymous'}</p>
+                                    <p><i class="fas fa-map-marker-alt mr-1"></i> Location: ${occurrence.location || 'Location not specified'}</p>
+                                    <p><i class="fas fa-clock mr-1"></i> Verified: ${verificationTime}</p>
+                                    ${occurrence.verificationNotes ? `
+                                        <p class="mt-2 text-blue-600">
+                                            <i class="fas fa-info-circle mr-1"></i> 
+                                            Verification Notes: ${occurrence.verificationNotes}
+                                        </p>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+
+                        circle.bindPopup(popupContent, {
+                            maxWidth: 300,
+                            className: 'custom-popup'
+                        });
+
+                        // Optional: Show popup on hover as well
+                        circle.on('mouseover', function(e) {
+                            this.openPopup();
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading verified occurrences:', error);
             }
         }
     </script>

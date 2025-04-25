@@ -2,380 +2,312 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ffffff">
     <title>Superadmin Dashboard - TehriMap</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
     <script src="js/config.js"></script>
     <style>
-        .container {
-            display: flex;
-            min-height: calc(100vh - 64px);
-            max-width: none !important;
-            margin: 0 !important;
-            width: 100%;
-        }
-        .admin-section {
-            width: 300px;
-            padding: 1rem;
-            border-right: 1px solid #e5e7eb;
-            overflow-y: auto;
-            height: calc(100vh - 128px);
-        }
-        .map-container {
-            width: 100%;
-            height: 100%;
+        /* Base styles */
+        html, body {
+            overflow-x: hidden;
             position: relative;
-            z-index: 1;
-        }
-        #map {
             width: 100%;
             height: 100%;
-            z-index: 1;
+            margin: 0;
+            padding: 0;
         }
-        .footer {
-            width: 100%;
-            z-index: 1000;
-            background-color: #111827;
-        }
+
         .main-content {
-            padding-bottom: 64px;
-            width: 100%;
+            padding-top: 64px; /* Height of the navbar */
+            min-height: calc(100vh - 64px);
+            position: relative;
+            overflow-x: hidden;
         }
-        .admin-list {
-            margin-bottom: 2rem;
+
+        /* Navigation styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            z-index: 1000;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        /* Override Tailwind container in footer */
-        .footer .container {
-            max-width: 1280px !important;
-            margin: 0 auto !important;
-            min-height: 0;
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 250px;
+            height: calc(100vh - 64px);
+            background: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 999;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
         }
-        
-        @media (max-width: 768px) {
-            .navbar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                background: white;
-                padding: 0.5rem;
-            }
-            
-            .navbar > div {
-                flex-direction: column;
-                gap: 1rem;
-                height: auto;
-            }
-            
-            .navbar .flex {
-                flex-direction: column;
-                align-items: stretch;
-                width: 100%;
-            }
-            
-            .content-wrapper {
-                padding-top: 60px;
-            }
-            
-            .map-container {
-                height: calc(100vh - 60px);
-                width: 100%;
-                position: fixed;
-                top: 60px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-            }
-            
-            #map {
-                height: 100%;
-                width: 100%;
-            }
-            
-            .search-container {
-                position: fixed;
-                top: 70px;
-                left: 10px;
-                right: 10px;
-                z-index: 1000;
-                background: white;
-                padding: 10px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            
-            .district-search {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            .search-input {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            .find-nearest {
-                width: 100%;
-                margin-top: 10px;
-            }
-            
-            .leaflet-control-zoom {
-                margin-top: 120px !important;
-            }
-            
-            .logout-button {
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                z-index: 1000;
-            }
-            
-            .admin-section {
-                width: 100%;
-                height: auto;
-                border-right: none;
-                border-bottom: 1px solid #e5e7eb;
-                margin-top: 64px; /* Account for fixed navbar */
-            }
-            
-            .map-container {
-                height: calc(100vh - 200px);
-                margin-top: 64px;
-            }
-            
-            .grid {
-                grid-template-columns: 1fr !important;
-                margin-top: 64px; /* Account for fixed navbar */
-            }
 
-            #map-management-section {
-                position: fixed;
-                top: 60px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-                height: calc(100vh - 60px);
-                overflow: hidden;
-            }
-
-            #map-management-section .grid {
-                display: flex;
-                flex-direction: column;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
-            
-            #map-management-section .col-span-3 {
-                flex: 1;
-                height: 70vh;
-                order: 1;
-            }
-            
-            #map-management-section .col-span-1 {
-                height: 30vh;
-                order: 2;
-                overflow-y: auto;
-                background: white;
-                padding: 1rem;
-                border-top: 1px solid #e5e7eb;
-            }
-
-            #map {
-                width: 100%;
-                height: 100%;
-                position: absolute;
-                top: 0;
-                left: 0;
-            }
-
-            .marker-form {
-                height: 100%;
-                overflow-y: auto;
-                padding: 1rem;
-                background: white;
-            }
-
-            .district-search {
-                position: fixed;
-                top: 70px;
-                left: 10px;
-                right: 10px;
-                z-index: 1000;
-            }
-            
-            .search-container {
-                background: white;
-                padding: 10px;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            }
-            
-            .leaflet-control-zoom {
-                margin-top: 120px !important;
-            }
-            
-            .admin-keys-table {
-                font-size: 0.875rem;
-                overflow-x: auto;
-                display: block;
-            }
-            
-            .admin-keys-table th,
-            .admin-keys-table td {
-                padding: 0.5rem;
-                white-space: nowrap;
-            }
-
-            .reports-section {
-                margin-top: 64px;
-                padding: 1rem;
-            }
-
-            .statistics-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .statistics-card {
-                padding: 1rem;
-            }
+        .mobile-menu.active {
+            display: block;
+            transform: translateX(0);
         }
-        
-        .custom-marker {
-            background: none;
-            border: none;
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            color: #374151;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .menu-item:hover {
+            background: #f3f4f6;
+        }
+
+        .menu-item.active {
+            background: #e5e7eb;
+            color: #1d4ed8;
+        }
+
+        .menu-item i {
+            margin-right: 0.75rem;
+            width: 20px;
             text-align: center;
         }
-        .custom-marker:hover {
-            transform: scale(1.2);
-            transition: transform 0.2s;
+
+        /* Tab Navigation */
+        .tab-navigation {
+            position: sticky;
+            top: 64px;
+            z-index: 999;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .tab-active {
+
+        .tab-button {
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
             background-color: #f3f4f6;
             border-bottom: 2px solid #3b82f6;
         }
-        .admin-keys-table {
+
+        /* Section styles */
+        .section {
+            display: none;
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
+            min-height: calc(100vh - 128px); /* Viewport height minus navbar and tabs */
+            padding: 1rem;
         }
-        .admin-keys-table th,
-        .admin-keys-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+
+        .section.active {
+            display: block;
         }
-        .admin-keys-table th {
-            background-color: #f3f4f6;
-            font-weight: 600;
+
+        #admin-keys-section,
+        #map-management-section,
+        #reports-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .leaflet-popup-content button {
-            margin-top: 8px;
-            padding: 4px 8px;
-            background-color: #ef4444;
-            color: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .leaflet-popup-content button:hover {
-            background-color: #dc2626;
-        }
-        .district-search {
+
+        #admin-keys-section.active,
+        #map-management-section.active,
+        #reports-section.active {
+            opacity: 1;
+            visibility: visible;
             position: relative;
         }
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.375rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-            display: none;
+
+        /* Map styles */
+        .map-container {
+            width: 100%;
+            height: calc(100vh - 200px);
+            min-height: 400px;
+            position: relative;
+            z-index: 1;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
         }
-        .search-result-item {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
+
+        #map {
+            width: 100%;
+            height: 100%;
         }
-        .search-result-item:hover {
-            background-color: #f3f4f6;
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .navbar-content {
+                padding: 0.5rem;
+            }
+
+            .mobile-menu {
+                width: 100%;
+            }
+
+            .main-content.menu-open {
+                margin-left: 0;
+            }
+
+            .tab-navigation {
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .tab-button {
+                display: inline-block;
+                padding: 0.75rem 1rem;
+            }
+
+            .map-container {
+                height: calc(100vh - 300px);
+            }
+        }
+
+        /* Tablet styles */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) {
+            .btn, button, .clickable {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            .table-responsive td,
+            .table-responsive th {
+                padding: 1rem;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .navbar, .modal-content, .stats-card {
+                background-color: #1f2937;
+                color: #f3f4f6;
+            }
+        }
+
+        /* Table styles */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-container {
+            min-width: 100%;
+            overflow-x: auto;
+        }
+
+        /* Content area adjustments */
+        .main-content {
+            padding-top: 64px;
+            margin-left: 0;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.menu-open {
+            margin-left: 250px;
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-100">
+<body class="bg-gray-100">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg">
+    <nav class="navbar">
         <div class="max-w-7xl mx-auto px-4 py-2">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo and Menu Button -->
                 <div class="flex items-center">
-                    <span class="text-2xl font-bold text-blue-600">TehriMap</span>
+                    <button id="mobileMenuBtn" class="p-2 rounded-md hover:bg-gray-100">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <span class="text-2xl font-bold text-blue-600 ml-4">Uttarakhand Police</span>
                 </div>
 
-                <!-- District Search -->
-                <div class="district-search flex-1 max-w-lg w-full">
+                <!-- Search Bar -->
+                <div class="hidden md:block flex-1 max-w-lg mx-4">
                     <div class="relative">
                         <input type="text" id="districtSearch" 
                                placeholder="Search Uttarakhand districts..." 
                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <div id="searchResults" class="search-results"></div>
                     </div>
                 </div>
 
-                <div class="flex items-center">
-                    <button id="logoutBtn" class="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium w-full md:w-auto">
-                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
-                    </button>
-                </div>
+                <!-- Logout Button -->
+                <button id="logoutBtn" class="text-red-600 hover:text-red-800 px-3 py-2 rounded-md text-sm font-medium">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Tab Navigation -->
-    <div class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex flex-col md:flex-row gap-2 md:gap-4 py-2">
-                <button onclick="showSection('admin-keys')" class="px-4 py-2 rounded-lg hover:bg-blue-100 tab-button w-full md:w-auto">Admin Keys</button>
-                <button onclick="showSection('map-management')" class="px-4 py-2 rounded-lg hover:bg-blue-100 tab-button w-full md:w-auto">Map Management</button>
-                <button onclick="showSection('reports')" class="px-4 py-2 rounded-lg hover:bg-blue-100 tab-button w-full md:w-auto">Reports</button>
-            </div>
-        </div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="#" class="menu-item active" onclick="showSection('admin-keys')">
+            <i class="fas fa-key"></i>
+            प्रशासक कुंजी
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('map-management')">
+            <i class="fas fa-map-marker-alt"></i>
+            स्थान सूची
+        </a>
+        <a href="#" class="menu-item" onclick="showSection('reports')">
+            <i class="fas fa-chart-bar"></i>
+            रिपोर्ट
+        </a>
     </div>
 
-    <div class="main-content flex-grow">
+    <div class="main-content">
         <!-- Admin Management Section -->
-        <div id="admin-keys-section" class="p-6">
+        <div id="admin-keys-section" class="section active">
             <div class="max-w-7xl mx-auto">
-                <div class="bg-gray-50 p-6 rounded-lg shadow-lg">
-                    <div class="flex justify-between items-center mb-6 flex-col md:flex-row gap-4">
-                        <h2 class="text-2xl font-bold text-gray-800">Admin Management</h2>
+                <div class="bg-white rounded-lg shadow-lg p-4 md:p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <h2 class="text-xl md:text-2xl font-bold text-gray-800">प्रशासक प्रबंधन</h2>
                         <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                             <button type="button" onclick="generateRandomAdmin()" 
-                                    class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                    class="btn-primary">
                                 <i class="fas fa-robot mr-2"></i>
                                 Generate Random Admin
                             </button>
                             <button type="button" onclick="showCustomAdminModal()" 
-                                    class="w-full md:w-auto inline-flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                    class="btn-secondary">
                                 <i class="fas fa-user-plus mr-2"></i>
-                                Create Custom Admin
+                                प्रशासक बनाएं
                             </button>
                         </div>
                     </div>
 
                     <!-- Admin List Table -->
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="min-w-full bg-white">
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin ID</th>
@@ -395,60 +327,62 @@
         </div>
 
         <!-- Map Management Section -->
-        <div id="map-management-section" class="hidden">
+        <div id="map-management-section" class="section">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
                 <!-- Map Container -->
-                <div class="col-span-1 md:col-span-3 order-1 md:order-2">
-                    <div id="map" class="h-[75vh] md:h-[calc(100vh-150px)] rounded-lg shadow"></div>
+                <div class="col-span-1 md:col-span-3">
+                    <div class="map-container">
+                        <div id="map"></div>
+                    </div>
                 </div>
                 
-                <!-- Marker Form Column -->
-                <div class="col-span-1 bg-gray-50 p-4 rounded-lg shadow order-2 md:order-1">
-                    <h2 class="text-xl font-bold mb-4">Add New Marker</h2>
+                <!-- Marker Form -->
+                <div class="col-span-1 marker-form-container bg-white p-4 rounded-lg shadow">
+                    <h2 class="text-xl font-bold mb-4">नया स्थान जोड़ें</h2>
                     <form id="markerForm" class="space-y-4">
-                        <div>
-                            <label for="markerName" class="block text-sm font-medium text-gray-700">Marker Name</label>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700">स्थान का नाम</label>
                             <input type="text" id="markerName" required
                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
-                        <div>
-                            <label for="markerDescription" class="block text-sm font-medium text-gray-700">Description</label>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700">विवरण</label>
                             <textarea id="markerDescription" required
-                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                         </div>
-                        <div>
-                            <label for="markerType" class="block text-sm font-medium text-gray-700">Type</label>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-gray-700">प्रकार</label>
                             <select id="markerType" required
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <option value="TOURIST_SPOT">Tourist Spot</option>
-                                <option value="HOSPITAL">Hospital</option>
-                                <option value="SCHOOL">School</option>
-                                <option value="RESTAURANT">Restaurant</option>
-                                <option value="HOTEL">Hotel</option>
-                                <option value="POLICE_STATION">Police Station</option>
-                                <option value="CUSTOM">Custom</option>
+                                <option value="TOURIST_SPOT">टूरिस्ट स्पॉट</option>
+                                <option value="HOSPITAL">हॉस्पिटल</option>
+                                <option value="SCHOOL">स्कूल</option>
+                                <option value="RESTAURANT">रेस्टोरेंट</option>
+                                <option value="HOTEL">होटल</option>
+                                <option value="POLICE_STATION">पुलिस स्टेशन</option>
+                                <option value="CUSTOM">कस्टम</option>
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="markerLatitude" class="block text-sm font-medium text-gray-700">Latitude</label>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700">Latitude</label>
                                 <input type="number" id="markerLatitude" step="any" required readonly
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm">
                             </div>
-                            <div>
-                                <label for="markerLongitude" class="block text-sm font-medium text-gray-700">Longitude</label>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-gray-700">Longitude</label>
                                 <input type="number" id="markerLongitude" step="any" required readonly
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                       class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm">
                             </div>
                         </div>
                         <div class="flex space-x-2">
-                            <button type="button" id="clearSelectionBtn" onclick="clearMarkerSelection()"
-                                    class="w-1/2 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
-                                Clear Selection
+                            <button type="button" onclick="clearMarkerSelection()"
+                                    class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                चयन हटाएं
                             </button>
                             <button type="submit"
-                                    class="w-1/2 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                Add Marker
+                                    class="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                                स्थान जोड़ें
                             </button>
                         </div>
                     </form>
@@ -457,12 +391,13 @@
         </div>
 
         <!-- Reports Section -->
-        <div id="reports-section" class="hidden p-6">
+        <div id="reports-section" class="section">
             <div class="max-w-7xl mx-auto">
+                <!-- Statistics Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <!-- Total Users Card -->
                     <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Total Users</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">कुल उपयोगकर्ताओं</h3>
                         <div class="flex items-center">
                             <i class="fas fa-users text-3xl text-blue-500 mr-3"></i>
                             <span id="totalUsers" class="text-2xl font-bold">-</span>
@@ -471,7 +406,7 @@
 
                     <!-- Total Admins Card -->
                     <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Total Admins</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">कुल प्रशासक</h3>
                         <div class="flex items-center">
                             <i class="fas fa-user-shield text-3xl text-green-500 mr-3"></i>
                             <span id="totalAdmins" class="text-2xl font-bold">-</span>
@@ -480,7 +415,7 @@
 
                     <!-- Total Markers Card -->
                     <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Total Markers</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">कुल स्थान</h3>
                         <div class="flex items-center">
                             <i class="fas fa-map-marker-alt text-3xl text-red-500 mr-3"></i>
                             <span id="totalMarkers" class="text-2xl font-bold">-</span>
@@ -488,21 +423,21 @@
                     </div>
                 </div>
 
-                <!-- Users and Admins Section -->
+                <!-- Reports Tables -->
                 <div class="grid grid-cols-1 gap-6 mb-8">
                     <!-- Users List -->
                     <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                         <div class="p-6 border-b">
-                            <h3 class="text-xl font-semibold text-gray-800">System Users</h3>
+                            <h3 class="text-xl font-semibold text-gray-800">सिस्टम उपयोगकर्ताओं</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">उपयोगकर्ता नाम</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ईमेल</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">भूमिका</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">जुड़ने वाली तारीख</th>
                                     </tr>
                                 </thead>
                                 <tbody id="usersTable" class="bg-white divide-y divide-gray-200">
@@ -515,16 +450,16 @@
                     <!-- Markers by Admin Table -->
                     <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                         <div class="p-6 border-b">
-                            <h3 class="text-xl font-semibold text-gray-800">Markers by Admin</h3>
+                            <h3 class="text-xl font-semibold text-gray-800">प्रशासक द्वारा स्थान</h3>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin Name</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Markers</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Added</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marker Types</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">प्रशासक नाम</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">कुल स्थान</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">अंतिम जोड़ें</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">स्थान प्रकार</th>
                                     </tr>
                                 </thead>
                                 <tbody id="markersByAdminTable" class="bg-white divide-y divide-gray-200">
@@ -546,10 +481,10 @@
                     © 2024 TehriMap. All rights reserved.
                 </div>
                 <div class="flex flex-col md:flex-row items-center gap-4">
-                    <a href="mailto:contact@tehrimap.com" class="text-gray-400 hover:text-white text-sm transition flex items-center justify-center w-full md:w-auto">
+                    <a href="mailto:contact@tehrimap.com" class="text-gray-400 hover:text-white text-sm transition">
                         <i class="fas fa-envelope mr-2"></i>Contact
                     </a>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded transition duration-300 w-full md:w-auto">
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded">
                         <i class="fas fa-headset mr-2"></i>Support
                     </button>
                 </div>
@@ -665,10 +600,6 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-            crossorigin=""></script>
     <script>
         let map = null;
         let selectedMarker = null;
@@ -701,38 +632,69 @@
 
         // Show/Hide sections
         function showSection(sectionName) {
-            // Hide all sections
-            document.getElementById('admin-keys-section').classList.add('hidden');
-            document.getElementById('map-management-section').classList.add('hidden');
-            document.getElementById('reports-section').classList.add('hidden');
-
-            // Show selected section
-            document.getElementById(`${sectionName}-section`).classList.remove('hidden');
-
-            // Update active tab
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('tab-active');
-                if (button.textContent.toLowerCase().includes(sectionName)) {
-                    button.classList.add('tab-active');
-                }
+            // Remove active class from all sections and menu items
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
             });
 
-            // Load section-specific data
+            // Add active class to selected section and menu item
+            document.getElementById(`${sectionName}-section`).classList.add('active');
+            document.querySelector(`.menu-item[onclick*="${sectionName}"]`).classList.add('active');
+
+            // Initialize map if showing map section
             if (sectionName === 'map-management') {
-                if (!map) {
+                setTimeout(() => {
                     initMap();
-                } else {
-                    setTimeout(() => {
-                        map.invalidateSize();
-                        loadMarkers();
-                    }, 100);
-                }
+                }, 100);
             } else if (sectionName === 'admin-keys') {
                 loadAdmins();
             } else if (sectionName === 'reports') {
                 loadReports();
             }
+
+            // Close mobile menu on selection (for mobile devices)
+            if (window.innerWidth <= 768) {
+                toggleMobileMenu();
+            }
         }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const mainContent = document.querySelector('.main-content');
+            mobileMenu.classList.toggle('active');
+            mainContent.classList.toggle('menu-open');
+        }
+
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            const mobileMenu = document.querySelector('.mobile-menu');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            
+            if (mobileMenu && mobileMenu.classList.contains('active') && 
+                !mobileMenu.contains(e.target) && 
+                !mobileMenuBtn.contains(e.target)) {
+                toggleMobileMenu();
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = sessionStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Show admin-keys section by default
+            showSection('admin-keys');
+        });
 
         // Initialize map
         function initMap() {
@@ -746,8 +708,8 @@
                 return;
             }
 
-            // Center coordinates for Uttarakhand (more central location)
-            const uttarakhandCenter = [30.0668, 79.0193]; // Updated coordinates to center of Uttarakhand
+            // Center coordinates for Uttarakhand
+            const uttarakhandCenter = [30.0668, 79.0193];
             map = L.map('map', {
                 center: uttarakhandCenter,
                 zoom: 7.5,
@@ -757,7 +719,7 @@
                     [31.5, 81.0]  // Northeast coordinates
                 ]
             });
-            
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap contributors'
@@ -774,10 +736,11 @@
                         popupAnchor: [0, -30]
                     })
                 })
-                    .bindPopup(`<b>${district.name}</b>`)
-                    .addTo(map);
+                .bindPopup(`<b>${district.name}</b>`)
+                .addTo(map);
             });
 
+            // Handle map click events
             map.on('click', function(e) {
                 const lat = e.latlng.lat;
                 const lng = e.latlng.lng;
@@ -794,6 +757,7 @@
                 }).addTo(map);
             });
 
+            // Force map to update its size
             setTimeout(() => {
                 map.invalidateSize();
                 loadMarkers();
@@ -860,7 +824,7 @@
                 });
 
                 if (response.ok) {
-            loadMarkers();
+                    loadMarkers();
                 } else {
                     alert('Failed to delete marker');
                 }
@@ -908,94 +872,101 @@
             }
         });
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = sessionStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            // Set initial active tab and show admin-keys section by default
-            document.querySelector('.tab-button').classList.add('tab-active');
-            showSection('admin-keys');
-        });
-
         // Fetch and display admin list
         async function loadAdmins() {
             try {
+                console.log('Loading admins...');
                 const response = await fetch(`${config.apiBaseUrl}/api/auth/admins`, {
                     headers: {
                         'Authorization': `Bearer ${sessionStorage.getItem('token')}`
                     }
                 });
                 
-                if (response.ok) {
-                    const admins = await response.json();
-                    const adminTableBody = document.getElementById('adminTableBody');
-                    adminTableBody.innerHTML = '';
-                    
-                    if (admins.length === 0) {
-                        adminTableBody.innerHTML = `
-                            <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-                                    No admins found. Use the buttons above to create one.
-                                </td>
-                            </tr>
-                        `;
-                        return;
-                    }
-                    
-                    admins.forEach(admin => {
-                        const row = document.createElement('tr');
-                        row.className = 'hover:bg-gray-50';
-                        row.innerHTML = `
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">${admin.adminId || 'N/A'}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0">
-                                        <i class="fas fa-user-circle text-2xl text-gray-400"></i>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">${admin.username}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-500">${admin.email}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    Active
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button onclick="deleteAdmin('${admin.id}')" 
-                                        class="text-red-600 hover:text-red-900 flex items-center justify-end">
-                                    <i class="fas fa-trash-alt mr-1"></i>
-                                    Delete
-                                </button>
-                            </td>
-                        `;
-                        adminTableBody.appendChild(row);
-                    });
-                } else {
+                if (!response.ok) {
                     const error = await response.text();
                     console.error('Failed to load admins:', error);
                     throw new Error('Failed to load admin list');
                 }
+
+                const admins = await response.json();
+                console.log('Received admins:', admins);
+                
+                const adminTableBody = document.getElementById('adminTableBody');
+                if (!adminTableBody) {
+                    console.error('Admin table body not found');
+                    return;
+                }
+                
+                // Clear the existing table content
+                adminTableBody.innerHTML = '';
+                
+                if (!admins || admins.length === 0) {
+                    console.log('No admins found');
+                    adminTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                No admins found. Use the buttons above to create one.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Sort admins by creation date (newest first) if createdAt is available
+                if (admins[0].createdAt) {
+                    admins.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                }
+                
+                console.log('Rendering admin list...');
+                admins.forEach(admin => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${admin.id || 'N/A'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-user-circle text-2xl text-gray-400"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${admin.username}</div>
+                                    <div class="text-sm text-gray-500">${admin.district || 'No District'}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-500">${admin.email}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${admin.enabled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${admin.enabled ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button onclick="deleteAdmin('${admin.id}')" 
+                                    class="text-red-600 hover:text-red-900 flex items-center justify-end">
+                                <i class="fas fa-trash-alt mr-1"></i>
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    adminTableBody.appendChild(row);
+                });
+                console.log('Admin list updated successfully');
             } catch (error) {
                 console.error('Error loading admins:', error);
                 const adminTableBody = document.getElementById('adminTableBody');
-                adminTableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-red-500">
-                            Error loading admin list. Please try again later.
-                        </td>
-                    </tr>
-                `;
+                if (adminTableBody) {
+                    adminTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="px-6 py-4 text-center text-red-500">
+                                Error loading admin list. Please try again later.
+                            </td>
+                        </tr>
+                    `;
+                }
             }
         }
 
@@ -1045,14 +1016,19 @@
                     })
                 });
 
-                const data = await response.json();
-                
                 if (!response.ok) {
-                    throw new Error(data.message || 'Failed to create admin');
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to create admin');
                 }
 
+                const data = await response.json();
                 console.log('Admin created successfully:', data);
-                await loadAdmins(); // Refresh admin list
+                
+                // Force refresh the admin list
+                await loadAdmins();
+                
+                // Show success message
+                alert('Admin created successfully!');
                 return true;
             } catch (error) {
                 console.error('Error creating admin:', error);
@@ -1094,6 +1070,7 @@
                 const success = await createAdmin(adminData);
                 
                 if (success) {
+                    // Show credentials after successful creation
                     alert(`New Admin Created Successfully!\n\n` +
                           `Username: ${username}\n` +
                           `Admin ID: ${adminId}\n` +
@@ -1101,6 +1078,9 @@
                           `Email: ${email}\n` +
                           `District: ${adminData.district}\n\n` +
                           `Please save these credentials securely!`);
+                    
+                    // Force refresh the admin list again
+                    await loadAdmins();
                 }
             } catch (error) {
                 console.error('Error in generateRandomAdmin:', error);
@@ -1152,6 +1132,8 @@
             const success = await createAdmin(adminData);
             if (success) {
                 hideCustomAdminModal();
+                // Force refresh the admin list after hiding the modal
+                await loadAdmins();
             }
         });
 
@@ -1172,10 +1154,10 @@
 
         // Clear marker selection
         function clearMarkerSelection() {
-                    if (selectedMarker) {
-                        map.removeLayer(selectedMarker);
-                        selectedMarker = null;
-                    }
+            if (selectedMarker) {
+                map.removeLayer(selectedMarker);
+                selectedMarker = null;
+            }
             document.getElementById('markerLatitude').value = '';
             document.getElementById('markerLongitude').value = '';
         }
@@ -1408,6 +1390,14 @@
                 `;
             }
         }
+
+        // Sync mobile and desktop search
+        document.getElementById('mobileDistrictSearch').addEventListener('input', function(e) {
+            document.getElementById('districtSearch').value = e.target.value;
+            // Trigger the search function
+            const event = new Event('input');
+            document.getElementById('districtSearch').dispatchEvent(event);
+        });
     </script>
 </body>
-</html> 
+</html>

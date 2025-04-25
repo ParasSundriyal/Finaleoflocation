@@ -2,6 +2,7 @@ package com.auth.controller;
 
 import com.auth.model.Occurrence;
 import com.auth.model.User;
+import com.auth.model.ErrorResponse;
 import com.auth.service.OccurrenceService;
 import com.auth.repository.UserRepository;
 import com.auth.security.JwtUtil;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -177,5 +179,21 @@ public class OccurrenceController {
                     .body(photoData);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/verified")
+    public ResponseEntity<?> getVerifiedOccurrences() {
+        try {
+            // Get current time minus 24 hours
+            LocalDateTime oneDayAgo = LocalDateTime.now().minusHours(24);
+            
+            // Get verified occurrences from last 24 hours
+            List<Occurrence> verifiedOccurrences = occurrenceService.findRecentlyVerifiedOccurrences(oneDayAgo);
+            
+            return ResponseEntity.ok(verifiedOccurrences);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("Error fetching verified occurrences: " + e.getMessage()));
+        }
     }
 } 

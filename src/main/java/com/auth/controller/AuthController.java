@@ -226,8 +226,13 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Only superadmin can view admin list"));
             }
 
-            // Get admins only for superadmin's district
-            List<Map<String, Object>> admins = userRepository.findByRoleAndDistrict("ADMIN", currentUser.getDistrict())
+            logger.info("Current superadmin details - Username: {}, District: {}, Role: {}", 
+                currentUser.getUsername(), 
+                currentUser.getDistrict(), 
+                currentUser.getRole());
+
+            // Get all admins instead of filtering by district
+            List<Map<String, Object>> admins = userRepository.findByRole("ADMIN")
                 .stream()
                 .map(admin -> {
                     Map<String, Object> adminData = new HashMap<>();
@@ -235,12 +240,18 @@ public class AuthController {
                     adminData.put("username", admin.getUsername());
                     adminData.put("email", admin.getEmail());
                     adminData.put("district", admin.getDistrict());
+                    adminData.put("enabled", admin.isEnabled());
                     adminData.put("area", admin.getArea());
                     adminData.put("createdAt", admin.getCreatedAt());
+                    logger.info("Found admin - Username: {}, District: {}, Enabled: {}", 
+                        admin.getUsername(), 
+                        admin.getDistrict(),
+                        admin.isEnabled());
                     return adminData;
                 })
                 .collect(Collectors.toList());
 
+            logger.info("Total admins found: {}", admins.size());
             return ResponseEntity.ok(admins);
         } catch (Exception e) {
             logger.error("Error fetching admin list", e);
@@ -294,7 +305,12 @@ public class AuthController {
                     response.put("username", user.getUsername());
                     response.put("email", user.getEmail());
                     response.put("role", user.getRole());
+                    response.put("district", user.getDistrict());
                     response.put("createdAt", user.getCreatedAt());
+                    logger.info("Found user details - Username: {}, District: {}, Role: {}", 
+                        user.getUsername(), 
+                        user.getDistrict(), 
+                        user.getRole());
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.notFound().build());

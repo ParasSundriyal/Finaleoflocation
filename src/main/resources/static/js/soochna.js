@@ -105,7 +105,21 @@ class SoochnaUpdateSection {
         this.container = document.getElementById(containerId);
         this.soochnaItems = [];
         this.lastFetchTime = null;
-        this.startPolling();
+        
+        // Don't start polling if this is a secondary container
+        if (containerId === 'soochna-updates') {
+            this.startPolling();
+        }
+    }
+
+    startPolling() {
+        // Fetch immediately
+        this.fetchSoochnaItems();
+        
+        // Then fetch every 30 seconds
+        setInterval(() => {
+            this.fetchSoochnaItems();
+        }, 30000);
     }
 
     async fetchSoochnaItems() {
@@ -150,10 +164,9 @@ class SoochnaUpdateSection {
             }
             
             const data = await response.json();
-            console.log('Received soochna data:', data); // Debug log
+            console.log('Received soochna data:', data);
             
             const newItems = data.map(item => {
-                console.log('Processing item:', item); // Debug log
                 return {
                     id: item.id,
                     title: item.title,
@@ -176,72 +189,89 @@ class SoochnaUpdateSection {
                 }
             }
             
-            console.log('Processed items:', newItems); // Debug log
             this.soochnaItems = newItems;
             this.lastFetchTime = new Date();
-            this.render();
+            
+            // Update all containers
+            this.updateAllContainers();
         } catch (error) {
             console.error('Error fetching soochna items:', error);
             this.renderError();
         }
     }
 
-    startPolling() {
-        // Fetch immediately
-        this.fetchSoochnaItems();
-        
-        // Then fetch every 30 seconds
-        setInterval(() => this.fetchSoochnaItems(), 30000);
-    }
-
-    showNotification(count) {
-        // Only try to show notification if permission is already granted
-        if ('Notification' in window && Notification.permission === 'granted') {
-            try {
-                new Notification('नई सूचना', {
-                    body: `आपके पास ${count} नई सूचनाएं हैं`,
-                    icon: '/favicon.ico'
-                });
-            } catch (error) {
-                console.log('Notification could not be shown:', error);
-            }
+    updateAllContainers() {
+        // Update desktop container
+        const desktopContainer = document.getElementById('soochna-updates');
+        if (desktopContainer) {
+            this.renderToContainer(desktopContainer);
         }
-        // Don't request permission if it was denied
+
+        // Update mobile container
+        const mobileContainer = document.getElementById('mobile-soochna-updates');
+        if (mobileContainer) {
+            this.renderToContainer(mobileContainer);
+        }
     }
 
-    render() {
+    renderToContainer(container) {
+        if (!container) return;
+        
+        container.innerHTML = '';
         if (this.soochnaItems.length === 0) {
-            this.container.innerHTML = `
-                <div class="text-center py-8">
-                    <p class="text-gray-500">कोई सूचना नहीं मिली</p>
+            container.innerHTML = `
+                <div class="text-center text-gray-500 py-4">
+                    कोई सूचना उपलब्ध नहीं है
                 </div>
             `;
             return;
         }
 
-        // Sort items but don't filter out rejected ones
-        const sortedItems = this.soochnaItems
-            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        this.soochnaItems.forEach(item => {
+            container.insertAdjacentHTML('beforeend', item.render());
+        });
+    }
 
-        console.log('Rendering items:', sortedItems); // Debug log
-        
-        this.container.innerHTML = sortedItems
-            .map(item => item.render())
-            .join('');
+    render() {
+        this.updateAllContainers();
     }
 
     renderError() {
-        this.container.innerHTML = `
-            <div class="text-center py-8">
-                <p class="text-red-500">सूचनाएं लोड करने में त्रुटि। कृपया बाद में पुनः प्रयास करें।</p>
+        const errorHtml = `
+            <div class="text-center text-red-500 py-4">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                सूचनाएं लोड करने में समस्या हुई
             </div>
         `;
+        
+        // Update both containers with error message
+        const containers = [
+            document.getElementById('soochna-updates'),
+            document.getElementById('mobile-soochna-updates')
+        ];
+        
+        containers.forEach(container => {
+            if (container) {
+                container.innerHTML = errorHtml;
+            }
+        });
+    }
+
+    showNotification(count) {
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(`${count} नई सूचनाएं`, {
+                body: 'नई सूचनाएं देखने के लिए क्लिक करें',
+                icon: '/favicon.ico'
+            });
+        }
     }
 }
 
 // Initialize the section when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    const soochnaSection = new SoochnaUpdateSection('soochna-updates');
+    // Initialize both desktop and mobile sections
+    const desktopSection = new SoochnaUpdateSection('soochna-updates');
+    const mobileSection = new SoochnaUpdateSection('mobile-soochna-updates');
     
     // Only request notification permission if not already denied
     if ('Notification' in window && Notification.permission === 'default') {

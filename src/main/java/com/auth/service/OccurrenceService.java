@@ -128,4 +128,8 @@ public class OccurrenceService {
         }
         return null;
     }
+
+    public List<Occurrence> findRecentlyVerifiedOccurrences(LocalDateTime since) {
+        return occurrenceRepository.findByStatusAndVerifiedAtGreaterThanEqual("VERIFIED", since);
+    }
 } 

@@ -17,5 +17,8 @@ services:
         sync: false # Will be set manually in Render dashboard
       - key: PORT
         value: 8080
-    buildCommand: "./mvnw clean package -DskipTests"
-    startCommand: "java -Xmx512m -jar target/*.jar" 
+    buildCommand: |
+      chmod +x ./mvnw
+      ./mvnw clean package -DskipTests
+    dockerfilePath: ./Dockerfile
+    startCommand: "java -Xmx512m -jar app.jar" 

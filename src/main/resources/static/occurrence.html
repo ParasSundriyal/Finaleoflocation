@@ -474,30 +474,30 @@
         <div class="form-container">
             <form id="occurrenceForm" class="space-y-4">
                 <div class="mb-4">
-                    <label for="title" class="form-label">Title</label>
+                    <label for="title" class="form-label">Title/शीर्षक</label>
                     <input type="text" id="title" class="input-field" required>
                 </div>
 
                 <div class="mb-4">
-                    <label for="description" class="form-label">Description</label>
+                    <label for="description" class="form-label">Description/विवरण</label>
                     <textarea id="description" class="input-field" rows="4" required></textarea>
                 </div>
 
                 <div class="mb-4">
-                    <label for="reporterName" class="form-label">Your Name</label>
+                    <label for="reporterName" class="form-label">Your Name/आपका नाम</label>
                     <input type="text" id="reporterName" class="input-field" required>
                 </div>
 
                 <div class="mb-4">
-                    <label for="reporterPhone" class="form-label">Phone Number</label>
+                    <label for="reporterPhone" class="form-label">Phone Number/फोन नंबर</label>
                     <input type="tel" id="reporterPhone" class="input-field" required>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label">Location</label>
+                    <label class="form-label">Location/स्थान</label>
                     <div id="locationStatus" class="text-sm mb-2">
                         <span class="text-blue-600">
-                            <i class="fas fa-location-arrow mr-2"></i>Detecting your location...
+                            <i class="fas fa-location-arrow mr-2"></i>आपके स्थान की पहचान हो रही है...
                         </span>
                     </div>
                     <input type="hidden" id="latitude" required>
@@ -505,24 +505,24 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label">Photos</label>
+                    <label class="form-label">Photos/फोटो</label>
                     <div class="flex items-center gap-4 mb-2">
                         <button type="button" id="cameraButton" class="text-blue-600 flex items-center gap-2">
                             <i class="fas fa-camera"></i>
-                            Take a Photo
+                            Take a Photo/फोटो लें
                         </button>
                         <label class="text-blue-600 cursor-pointer flex items-center gap-2">
                             <i class="fas fa-cloud-upload-alt"></i>
-                            Upload photos
+                            Upload photos/फोटो अपलोड करें
                             <input id="photos" type="file" class="hidden" multiple accept="image/*">
                         </label>
                     </div>
-                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                    <p class="text-xs text-gray-500">PNG, JPG, GIF 10MB तक</p>
                     <div id="photoPreview" class="mt-2"></div>
                 </div>
                 
                 <button type="submit" class="submit-button mt-6">
-                    Submit Report
+                    Submit Report/रिपोर्ट जमा करें
                 </button>
             </form>
         </div>
@@ -666,12 +666,12 @@
             
             Array.from(files).forEach(file => {
                 if (!file.type.startsWith('image/')) {
-                    alert('Please upload only image files');
+                    alert('Please upload only image files/केवल छवि फाइलें अपलोड करें');
                     return;
                 }
 
                 if (file.size > 10 * 1024 * 1024) {
-                    alert('File size should not exceed 10MB');
+                    alert('File size should not exceed 10MB/फाइल आकार 10MB से अधिक नहीं होनी चाहिए');
                     return;
                 }
 
@@ -709,12 +709,12 @@
             const longitude = document.getElementById('longitude').value;
 
             if (!latitude || !longitude) {
-                alert('Please wait for location detection or enable location services');
+                alert('Please wait for location detection or enable location services/स्थान पहचान या स्थान सेवाओं सक्षम करें');
                 return;
             }
 
             if (uploadedPhotos.length === 0) {
-                alert('Please upload at least one photo');
+                alert('कम से कम एक फोटो अपलोड करें');
                 return;
             }
 
@@ -761,7 +761,7 @@
                     throw new Error(errorData.message || 'Failed to submit occurrence');
                 }
 
-                alert('Occurrence submitted successfully!');
+                alert('Occurrence submitted successfully!/रिपोर्ट सफलतापूर्वक जमा हो गया है!');
                 window.location.href = '/';
             } catch (error) {
                 console.error('Error:', error);

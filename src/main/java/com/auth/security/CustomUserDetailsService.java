@@ -23,20 +23,29 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        logger.info("Loading user details for username: {}", username);
+        logger.info("CustomUserDetailsService - Loading user details for username: {}", username);
         
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> {
-                    logger.warn("User not found with username: {}", username);
+                    logger.warn("CustomUserDetailsService - User not found with username: {}", username);
                     return new UsernameNotFoundException("User not found with username: " + username);
                 });
 
-        logger.info("User found: {}, role: {}", user.getUsername(), user.getRole());
+        logger.info("CustomUserDetailsService - User found: {}, role: {}, password hash length: {}", 
+            user.getUsername(), 
+            user.getRole(),
+            user.getPassword() != null ? user.getPassword().length() : "null");
 
-        return new org.springframework.security.core.userdetails.User(
+        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole()))
         );
+
+        logger.info("CustomUserDetailsService - Created UserDetails for user: {}, authorities: {}", 
+            userDetails.getUsername(), 
+            userDetails.getAuthorities());
+
+        return userDetails;
     }
 } 

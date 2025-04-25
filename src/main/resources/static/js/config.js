@@ -1,5 +1,5 @@
 const config = {
     apiBaseUrl: window.location.hostname === 'localhost' 
         ? 'http://localhost:8080'
-        : window.location.origin
+        : 'https://policelocationmapping.onrender.com'
 }; 

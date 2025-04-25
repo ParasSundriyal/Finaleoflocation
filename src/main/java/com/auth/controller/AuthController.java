@@ -26,7 +26,11 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:8080", "https://tehrilocationmapping.onrender.com"}, allowCredentials = "true")
+@CrossOrigin(origins = {
+    "http://localhost:8080", 
+    "https://tehrilocationmapping.onrender.com",
+    "https://policelocationmapping.onrender.com"
+}, allowCredentials = "true")
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
@@ -119,41 +123,46 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginRequest) {
         try {
-            logger.info("Received login request for username: {}", loginRequest.get("username"));
+            String username = loginRequest.get("username");
+            String password = loginRequest.get("password");
+            
+            logger.info("Received login request for username: {}", username);
 
-            // Check if user exists first
-            if (!userRepository.findByUsername(loginRequest.get("username")).isPresent()) {
-                logger.warn("Login failed: User {} not found", loginRequest.get("username"));
-                return ResponseEntity.badRequest().body(Map.of("message", "Invalid username or password"));
-            }
+            // Check if user exists and get stored details
+            User storedUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> {
+                    logger.warn("Login failed: User {} not found", username);
+                    return new RuntimeException("Invalid username or password");
+                });
+
+            logger.info("Found user in database. Username: {}, Role: {}", storedUser.getUsername(), storedUser.getRole());
 
             try {
-                Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                        loginRequest.get("username"),
-                        loginRequest.get("password")
-                    )
-                );
+                // Create authentication token
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password);
+                logger.info("Attempting authentication for user: {}", username);
+
+                // Attempt authentication
+                Authentication authentication = authenticationManager.authenticate(authToken);
+                logger.info("Authentication successful for user: {}", username);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 UserDetails userDetails = (UserDetails) authentication.getPrincipal();
                 String token = jwtUtil.generateToken(userDetails.getUsername());
 
-                // Get user role
-                User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-                
                 Map<String, String> response = new HashMap<>();
                 response.put("token", token);
-                response.put("role", user.getRole());
+                response.put("role", storedUser.getRole());
                 
-                logger.info("Login successful for user: {}", loginRequest.get("username"));
+                logger.info("Login successful for user: {}, Role: {}", username, storedUser.getRole());
                 return ResponseEntity.ok(response);
             } catch (Exception e) {
-                logger.error("Authentication failed for user: " + loginRequest.get("username") + ", Error: " + e.getMessage());
+                logger.error("Authentication failed for user: {}, Error: {}", username, e.getMessage());
+                logger.error("Authentication error details:", e);
                 return ResponseEntity.badRequest().body(Map.of("message", "Invalid username or password"));
             }
         } catch (Exception e) {
-            logger.error("Error during login for user: " + loginRequest.get("username"), e);
+            logger.error("Error during login process: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("message", "Login failed: " + e.getMessage()));
         }
     }

@@ -22,6 +22,12 @@ RUN mvn clean package -DskipTests
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+
+# Create uploads directory and set permissions
+RUN mkdir -p /app/uploads && \
+    chmod -R 777 /app/uploads
+
 ENV PORT=8080
+ENV file.upload-dir=/app/uploads
 EXPOSE ${PORT}
 CMD ["java", "-jar", "app.jar"]

@@ -121,29 +121,40 @@ public class AuthController {
         try {
             logger.info("Received login request for username: {}", loginRequest.get("username"));
 
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.get("username"),
-                    loginRequest.get("password")
-                )
-            );
+            // Check if user exists first
+            if (!userRepository.findByUsername(loginRequest.get("username")).isPresent()) {
+                logger.warn("Login failed: User {} not found", loginRequest.get("username"));
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid username or password"));
+            }
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername());
+            try {
+                Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                        loginRequest.get("username"),
+                        loginRequest.get("password")
+                    )
+                );
 
-            // Get user role
-            User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("token", token);
-            response.put("role", user.getRole());
-            
-            logger.info("Login successful for user: {}", loginRequest.get("username"));
-            return ResponseEntity.ok(response);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                String token = jwtUtil.generateToken(userDetails.getUsername());
+
+                // Get user role
+                User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
+                
+                Map<String, String> response = new HashMap<>();
+                response.put("token", token);
+                response.put("role", user.getRole());
+                
+                logger.info("Login successful for user: {}", loginRequest.get("username"));
+                return ResponseEntity.ok(response);
+            } catch (Exception e) {
+                logger.error("Authentication failed for user: " + loginRequest.get("username") + ", Error: " + e.getMessage());
+                return ResponseEntity.badRequest().body(Map.of("message", "Invalid username or password"));
+            }
         } catch (Exception e) {
-            logger.error("Authentication failed for user: " + loginRequest.get("username"), e);
-            return ResponseEntity.badRequest().body(Map.of("message", "Authentication failed: " + e.getMessage()));
+            logger.error("Error during login for user: " + loginRequest.get("username"), e);
+            return ResponseEntity.badRequest().body(Map.of("message", "Login failed: " + e.getMessage()));
         }
     }
 

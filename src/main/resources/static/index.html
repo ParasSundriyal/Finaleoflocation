@@ -15,7 +15,19 @@
         }
         .search-container {
             position: relative;
+            width: 130%;
+        }
+        .search-container-mobile {
+            position: relative;
+            width: 170%;
+            margin-right: 0;
+            margin-left: 0;
+        }
+        .search-container-mobile input {
             width: 100%;
+            font-size: 14px;
+            background-color: white;
+            height: 2.2rem;
         }
         .search-input {
             width: 100%;
@@ -84,7 +96,16 @@
         /* Mobile-specific styles */
         @media (max-width: 640px) {
             #map {
-                height: calc(100vh - 64px);
+                height: calc(100vh - 128px); /* Adjusted to account for footer */
+            }
+            footer {
+                padding: 0.75rem 0.5rem;
+            }
+            footer .container {
+                padding: 0;
+            }
+            footer .text-sm {
+                font-size: 0.75rem;
             }
             .mobile-menu {
                 display: none;
@@ -139,33 +160,67 @@
                 height: calc(100vh - 64px - 100%);
             }
         }
+        .search-results-mobile {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        .search-results-mobile.show {
+            display: block;
+        }
+        .search-results-mobile .search-result-item {
+            padding: 0.5rem 0.75rem;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen bg-gray-100">
     <!-- Navbar -->
     <nav class="bg-white shadow-lg">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
+        <div class="max-w-9xl mx-auto px-2 sm:px-10">
+            <div class="flex justify-start h-16 gap-16">
                 <!-- Logo and Desktop Navigation -->
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <a href="/" class="text-xl font-bold text-gray-800">Uttarakhand Police</a>
+                <div class="flex items-center">
+                    <a href="/" class="sm:hidden flex-shrink-0 text-gray-600 hover:text-gray-900 mr-3">
+                        <i class="fas fa-home text-xl"></i>
+                    </a>
+                    <div class="flex-shrink-0">
+                        <a href="/" class="text-xs sm:text-xl font-bold text-gray-800 pl-0">Uttarakhand Police</a>
                     </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="/" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                    <div class="sm:hidden ml-2 flex-1 px-0">
+                        <div class="search-container-mobile">
+                            <input type="text" id="mobile-header-search" 
+                                   placeholder="Search districts..." 
+                                   class="w-full text-sm px-4 py-2 border rounded-md"
+                                   autocomplete="off">
+                            <div id="mobile-header-search-results" class="search-results-mobile"></div>
+                        </div>
+                    </div>
+                    <div class="hidden sm:ml-16 sm:flex sm:space-x-20">
+                        <a href="/" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1  text-sm font-medium">
                             होम
                         </a>
-                        <a href="/occurrence.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="/occurrence.html" class="text-gray-800 hover:text-yellow-700 inline-flex items-center px-1 pt-1  text-sm font-medium">
                             सूचना दर्ज करें
                         </a>
-                        <a href="/aapdamitr.html" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                        <a href="/aapdamitr.html" class="text-grey-900 hover:text-red-700 inline-flex items-center px-1 pt-1 text-sm font-medium">
                             आपदा मित्र
                         </a>
                     </div>
-                    </div>
-                    
+                </div>
+                
                 <!-- Desktop Search and Auth -->
-                <div class="hidden sm:flex sm:items-center sm:space-x-4">
+                <div class="hidden sm:flex sm:items-center sm:space-x-4 gap-32">
                     <div class="relative w-96">
                     <div class="search-container">
                         <input type="text" id="desktop-search" 
@@ -196,32 +251,18 @@
             
             <!-- Mobile menu -->
         <div class="sm:hidden mobile-menu" id="mobile-menu">
-            <div class="bg-white">
-                <a href="/" class="block text-indigo-600 bg-indigo-50 px-4 py-3 text-base font-medium border-l-4 border-indigo-500">
-                    होम
-                </a>
-                <a href="/occurrence.html" class="block text-gray-600 hover:bg-gray-50 px-4 py-3 text-base font-medium border-l-4 border-transparent hover:border-gray-300">
+            <div class="bg-white p-4 space-y-3">
+                <a href="/occurrence.html" class="block w-full text-center text-gray-800 bg-yellow-400 hover:bg-yellow-500 px-4 py-3 text-base font-medium rounded-lg transition-colors">
                     सूचना दर्ज करें
                 </a>
-                <a href="/aapdamitr.html" class="block text-gray-600 hover:bg-gray-50 px-4 py-3 text-base font-medium border-l-4 border-transparent hover:border-gray-300">
+                <a href="/aapdamitr.html" class="block w-full text-center text-white bg-red-600 hover:bg-red-700 px-4 py-3 text-base font-medium rounded-lg transition-colors">
                     आपदा मित्र
                 </a>
                 
-                <!-- Mobile Search -->
-                <div class="p-4 border-t border-gray-200">
-                    <div class="search-container">
-                        <input type="text" id="mobile-search" 
-                               placeholder="Search Uttarakhand districts..." 
-                               class="search-input"
-                               autocomplete="off">
-                        <div id="mobile-search-results" class="search-results"></div>
-                    </div>
-                </div>
-                
                 <!-- Mobile Auth Buttons -->
-                <div class="p-4 border-t border-gray-200" id="mobile-auth-buttons">
+                <div id="mobile-auth-buttons">
                     <!-- Will be populated by JavaScript -->
-            </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -236,20 +277,20 @@
     <footer class="bg-gray-900 text-white py-4 relative z-10">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="text-sm mb-2 md:mb-0">
+                <div class="text-sm mb-4 md:mb-0 text-center md:text-left">
                     © 2024 TehriMap. All rights reserved.
                 </div>
-                <div class="flex items-center space-x-6">
-                    <a href="mailto:contact@tehrimap.com" class="text-gray-400 hover:text-white text-sm transition flex items-center">
-                        <i class="fas fa-envelope mr-2"></i>
+                <div class="flex flex-row items-center justify-center space-x-4 md:space-x-6">
+                    <a href="mailto:contact@tehrimap.com" class="text-gray-400 hover:text-white text-xs md:text-sm transition flex items-center">
+                        <i class="fas fa-envelope mr-1 md:mr-2"></i>
                         Contact
                     </a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition flex items-center">
-                        <i class="fas fa-info-circle mr-2"></i>
+                    <a href="#" class="text-gray-400 hover:text-white text-xs md:text-sm transition flex items-center">
+                        <i class="fas fa-info-circle mr-1 md:mr-2"></i>
                         About
                     </a>
-                    <a href="#" class="text-gray-400 hover:text-white text-sm transition flex items-center">
-                        <i class="fas fa-headset mr-2"></i>
+                    <a href="#" class="text-gray-400 hover:text-white text-xs md:text-sm transition flex items-center">
+                        <i class="fas fa-headset mr-1 md:mr-2"></i>
                         Support
                     </a>
                 </div>
@@ -366,7 +407,7 @@
                         `;
                         results.classList.add('show');
                     }
-                }, 150); // Debounce delay
+                }, 150);
             });
 
             // Show results on focus if input has value
@@ -397,9 +438,16 @@
             });
             
             document.getElementById('desktop-search-results').classList.remove('show');
-            document.getElementById('mobile-search-results').classList.remove('show');
+            document.getElementById('mobile-header-search-results').classList.remove('show');
             document.getElementById('desktop-search').value = name;
-            document.getElementById('mobile-search').value = name;
+            document.getElementById('mobile-header-search').value = name;
+            
+            // Close mobile menu if it's open
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu.classList.contains('show')) {
+                mobileMenu.classList.remove('show');
+                document.getElementById('mobile-menu-button').setAttribute('aria-expanded', 'false');
+            }
         }
 
         // Load map data with error handling and loading indicators
@@ -450,16 +498,16 @@
 
                 desktopAuthButtons.innerHTML = authContent;
                 mobileAuthButtons.innerHTML = `
-                    <div class="space-y-1">
+                    <div class="space-y-3">
                         ${isAdmin ? `
-                            <a href="/admin.html" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                            <a href="/admin.html" class="block w-full text-center text-gray-700 bg-gray-100 hover:bg-gray-200 px-4 py-3 text-base font-medium rounded-lg transition-colors">
                                 Admin Dashboard
                             </a>
                         ` : ''}
-                        <div class="px-4 py-2 text-base font-medium text-gray-500">
+                        <div class="block w-full text-center text-gray-700 bg-gray-100 px-4 py-3 text-base font-medium rounded-lg">
                             ${username}
                         </div>
-                        <button onclick="logout()" class="block w-full text-left px-4 py-2 text-base font-medium text-red-500 hover:text-red-800 hover:bg-gray-100">
+                        <button onclick="logout()" class="block w-full text-center text-white bg-red-500 hover:bg-red-600 px-4 py-3 text-base font-medium rounded-lg transition-colors">
                             Logout
                         </button>
                     </div>
@@ -467,21 +515,21 @@
             } else {
                 // Logged out state
                 const authContent = `
-                    <a href="/login.html" class="bg-indigo-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600">
-                    Login
+                    <a href="/login.html" class="bg-indigo-500  text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-600">
+                        Login
                     </a>
-                    <a href="/signup.html" class="ml-2 bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600">
+                    <a href="/signup.html" class="ml-8 bg-gray-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-600">
                         Sign Up
                     </a>
                 `;
 
                 desktopAuthButtons.innerHTML = authContent;
                 mobileAuthButtons.innerHTML = `
-                    <div class="space-y-1">
-                        <a href="/login.html" class="block px-4 py-2 text-base font-medium text-indigo-600 hover:text-indigo-800 hover:bg-gray-100">
+                    <div class="space-y-3">
+                        <a href="/login.html" class="block w-full text-center text-white bg-indigo-500 hover:bg-indigo-600 px-4 py-3 text-base font-medium rounded-lg transition-colors">
                             Login
                         </a>
-                        <a href="/signup.html" class="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+                        <a href="/signup.html" class="block w-full text-center text-white bg-gray-500 hover:bg-gray-600 px-4 py-3 text-base font-medium rounded-lg transition-colors">
                             Sign Up
                         </a>
                     </div>
@@ -511,7 +559,7 @@
 
         // Initialize
         setupSearch('desktop-search', 'desktop-search-results');
-        setupSearch('mobile-search', 'mobile-search-results');
+        setupSearch('mobile-header-search', 'mobile-header-search-results');
         updateAuthUI();
         loadMapDataWithRetry();
 

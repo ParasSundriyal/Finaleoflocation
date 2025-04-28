@@ -16,24 +16,57 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpMethod;
+
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+    
     private final JwtRequestFilter jwtRequestFilter;
-
+    
     public SecurityConfig(JwtRequestFilter jwtRequestFilter) {
         this.jwtRequestFilter = jwtRequestFilter;
     }
-
+    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors().and()
             .csrf().disable()
-            .headers().frameOptions().disable()
+            .authorizeHttpRequests()
+            .requestMatchers(
+                "/api/auth/login", 
+                "/api/auth/signup",
+                "/", 
+                "/index.html", 
+                "/login.html", 
+                "/signup.html",
+                "/occurrence.html",
+                "/css/**", 
+                "/js/**", 
+                "/static/**",
+                "/*.js", 
+                "/*.css", 
+                "/*.ico", 
+                "/*.png", 
+                "/*.jpg", 
+                "/*.jpeg", 
+                "/*.gif",
+                "/*.html",
+                "/error"
+            ).permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/occurrences", "/api/occurrences/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/occurrences", "/api/occurrences/**").permitAll()
+            .requestMatchers("/api/auth/statistics", "/api/auth/markers-by-admin", "/api/auth/users").hasAuthority("ROLE_SUPERADMIN")
+            .requestMatchers("/superadmin.html").hasAuthority("ROLE_SUPERADMIN")
+            .requestMatchers("/admin.html").hasAuthority("ROLE_ADMIN")
+            .requestMatchers("/dashboard.html").authenticated()
+            .anyRequest().authenticated()
+            .and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
             .exceptionHandling()
             .authenticationEntryPoint((request, response, authException) -> {
                 if (request.getRequestURI().startsWith("/api/")) {
@@ -41,45 +74,13 @@ public class SecurityConfig {
                 } else {
                     response.sendRedirect("/login.html");
                 }
-            })
-            .and()
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/auth/login",
-                    "/api/auth/signup",
-                    "/", 
-                    "/index.html", 
-                    "/login.html", 
-                    "/signup.html",
-                    "/occurrence.html",
-                    "/css/**",
-                    "/js/**",
-                    "/static/**",
-                    "/*.js", 
-                    "/*.css", 
-                    "/*.ico", 
-                    "/*.png", 
-                    "/*.jpg", 
-                    "/*.jpeg", 
-                    "/*.gif",
-                    "/*.html",
-                    "/error"
-                ).permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/occurrences", "/api/occurrences/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/occurrences", "/api/occurrences/**").permitAll()
-                .requestMatchers("/api/auth/statistics", "/api/auth/markers-by-admin", "/api/auth/users").hasAuthority("ROLE_SUPERADMIN")
-                .requestMatchers("/superadmin.html").hasAuthority("ROLE_SUPERADMIN")
-                .requestMatchers("/admin.html").hasAuthority("ROLE_ADMIN")
-                .requestMatchers("/dashboard.html").authenticated()
-                .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
+            });
+        
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-
+        
         return http.build();
     }
-
+    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -91,8 +92,8 @@ public class SecurityConfig {
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization",
-            "Content-Type",
+            "Authorization", 
+            "Content-Type", 
             "X-Auth-Token",
             "X-Requested-With",
             "Accept",
@@ -101,19 +102,19 @@ public class SecurityConfig {
         configuration.setExposedHeaders(Arrays.asList("X-Auth-Token"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
+    
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-}
+} 

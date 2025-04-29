@@ -51,7 +51,7 @@
             left: 0;
             width: 250px;
             height: calc(100vh - 64px);
-            background: white;
+            background: linear-gradient(to bottom, #EBF4FF, #F0F7FF);
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             z-index: 999;
             transform: translateX(-100%);
@@ -69,22 +69,26 @@
             padding: 1rem;
             color: #374151;
             transition: all 0.3s ease;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(219, 234, 254, 0.8);
+            background: rgba(255, 255, 255, 0.5);
         }
 
         .menu-item:hover {
-            background: #f3f4f6;
+            background: rgba(219, 234, 254, 0.5);
+            color: #1d4ed8;
         }
 
         .menu-item.active {
-            background: #e5e7eb;
+            background: rgba(219, 234, 254, 0.8);
             color: #1d4ed8;
+            border-left: 4px solid #1d4ed8;
         }
 
         .menu-item i {
             margin-right: 0.75rem;
             width: 20px;
             text-align: center;
+            color: #3b82f6;
         }
 
         /* Tab Navigation */
@@ -160,6 +164,24 @@
         @media (max-width: 768px) {
             .navbar-content {
                 padding: 0.5rem;
+            }
+
+            /* Adjust Uttarakhand Police text size for mobile */
+            .navbar .text-2xl {
+                font-size: 1.25rem;
+                line-height: 1.75rem;
+            }
+
+            /* Ensure hamburger menu is leftmost */
+            #mobileMenuBtn {
+                margin-left: 0;
+                padding-left: 0;
+            }
+
+            /* Move logout button to rightmost */
+            #logoutBtn {
+                margin-left: auto;
+                padding-right: 0;
             }
 
             .mobile-menu {
@@ -293,13 +315,13 @@
                         <h2 class="text-xl md:text-2xl font-bold text-gray-800">प्रशासक प्रबंधन</h2>
                         <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                             <button type="button" onclick="generateRandomAdmin()" 
-                                    class="btn-primary">
-                                <i class="fas fa-robot mr-2"></i>
+                                    class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg hover:from-purple-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                                <i class="fas fa-robot mr-2 text-xl"></i>
                                 Generate Random Admin
                             </button>
                             <button type="button" onclick="showCustomAdminModal()" 
-                                    class="btn-secondary">
-                                <i class="fas fa-user-plus mr-2"></i>
+                                    class="bg-gradient-to-r from-blue-300 to-blue-400 text-white px-6 py-3 rounded-lg shadow-lg hover:from-blue-400 hover:to-blue-500 transform hover:scale-105 transition-all duration-200 flex items-center justify-center">
+                                <i class="fas fa-user-plus mr-2 text-xl"></i>
                                 प्रशासक बनाएं
                             </button>
                         </div>
@@ -480,13 +502,13 @@
                 <div class="text-sm text-center md:text-left">
                     © 2024 TehriMap. All rights reserved.
                 </div>
-                <div class="flex flex-col md:flex-row items-center gap-4">
+                <div class="flex flex-row items-center gap-4">
                     <a href="mailto:contact@tehrimap.com" class="text-gray-400 hover:text-white text-sm transition">
                         <i class="fas fa-envelope mr-2"></i>Contact
                     </a>
-                    <button class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold py-2 px-4 rounded">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm transition">
                         <i class="fas fa-headset mr-2"></i>Support
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>

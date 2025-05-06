@@ -12,4 +12,6 @@ public interface OccurrenceRepository extends MongoRepository<Occurrence, String
     List<Occurrence> findByStatusAndActiveOnMap(String status, boolean activeOnMap);
     List<Occurrence> findByDistrict(String district);
     List<Occurrence> findByStatusAndVerifiedAtGreaterThanEqual(String status, LocalDateTime verifiedAt);
+    List<Occurrence> findByReportedAtGreaterThanEqual(java.time.LocalDateTime since);
+    List<Occurrence> findByStatusAndReportedAtGreaterThanEqual(String status, java.time.LocalDateTime since);
 } 

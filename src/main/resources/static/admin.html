@@ -10,6 +10,7 @@
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
           crossorigin=""/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css" />
     <style>
         body {
             background-color: #f3f4f6;
@@ -44,6 +45,11 @@
             overflow-y: auto;
             height: 100%;
             z-index: 2;
+            display: none;
+        }
+
+        .marker-form-container.show {
+            display: block;
         }
 
         .map-container {
@@ -302,7 +308,7 @@
         }
         .search-container {
             margin: 0;
-            width: 400px;  /* Increased from 300px */
+            width: 800px;  /* Increased from 400px to make it wider */
         }
         .grid {
             height: 100%;
@@ -870,101 +876,104 @@
         .nav-links.show {
             display: flex;
         }
+
+        @media (max-width: 768px) {
+            .search-container { display: none !important; }
+            #adminName { display: none !important; }
+        }
+
+        .marker-form-modal-bg {
+          display: none;
+          position: fixed;
+          z-index: 2000;
+          left: 0;
+          top: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0,0,0,0.3);
+          align-items: center;
+          justify-content: center;
+        }
+        .marker-form-modal-bg.show {
+          display: flex;
+        }
+        .marker-form-modal {
+          background: #fff;
+          border-radius: 0.75rem;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+          padding: 2rem 1.5rem 1.5rem 1.5rem;
+          min-width: 320px;
+          max-width: 95vw;
+          width: 100%;
+          max-width: 400px;
+          position: relative;
+        }
+        .close-form {
+          position: absolute;
+          top: 0.5rem;
+          right: 0.75rem;
+          font-size: 1.5rem;
+          color: #888;
+          background: none;
+          border: none;
+          cursor: pointer;
+          z-index: 10;
+        }
+        @media (max-width: 600px) {
+          .marker-form-modal { min-width: 0; width: 95vw; padding: 1rem; }
+        }
+        /* Add this for the full image modal z-index fix */
+        .full-image-modal {
+            z-index: 20000 !important;
+        }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
-        <div class="navbar-left">
-            <!-- Hamburger menu button -->
-            <button class="mobile-menu-button">
-                <i class="fas fa-bars text-2xl"></i>
+    <nav class="navbar px-4 py-2 flex items-center justify-between bg-blue-900 shadow-md">
+        <!-- Left: Logo & Hamburger -->
+        <div class="flex items-center gap-4 min-w-fit">
+            <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 bg-white shadow-md hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-400 transition-all duration-150 mr-2 mt-1" aria-expanded="false" style="position: relative; z-index: 1100;">
+                <span class="sr-only">Open main menu</span>
+                <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
             </button>
-            <span class="text-2xl font-bold text-white">Uttarakhand Police</span>
+            <h1 class="text-xl font-bold text-white whitespace-nowrap">TehriMap</h1>
         </div>
-
-        <div class="navbar-center">
-            <!-- Search bar - always visible -->
-            <div class="search-container">
-                <div class="district-search">
-                    <div class="relative">
-                        <select id="districtSearch" class="search-select w-full">
-                            <option value="">Select a district...</option>
-                            <option value="all">All Districts</option>
-                        </select>
-                    </div>
+        <!-- Center: Search Bar -->
+        <div class="flex-1 flex justify-center">
+            <div class="search-container w-full max-w-lg">
+                <div class="district-search w-full">
+                    <select id="districtSearch" class="search-select w-full rounded-md border border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Select a district...</option>
+                        <option value="all">All Districts</option>
+                    </select>
+                    <div id="searchResults" class="search-results"></div>
                 </div>
             </div>
         </div>
-
-        <!-- Navigation links - in hamburger menu -->
-        <div class="nav-links">
+        <div class="navbar-right flex items-center gap-4">
+            <span id="adminName" class="text-white"></span>
+            <a href="/admin.html" class="text-white hover:text-gray-200 px-4 py-2 rounded-md">
+                <i class="fas fa-map-marked-alt mr-2"></i>Back to Map
+            </a>
+            <button id="logoutBtn" class="text-red-400 hover:text-red-300 px-4 py-2 rounded-md">
+                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+        </div>
+        <!-- Hamburger menu links (hidden by default, shown on mobile) -->
+        <div class="nav-links hidden flex-col absolute top-16 left-0 w-full bg-blue-900 z-50 rounded-b-lg md:static md:flex md:flex-row md:items-center md:bg-transparent md:w-auto md:rounded-none">
             <a href="admin.html" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">स्थान निर्धारण</a>
             <a href="manage-markers.html" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">स्थान सूची</a>
             <a href="emergency-contacts.html" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">Emergency Contacts</a>
             <a href="#" class="text-white hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium" onclick="showOccurrenceSection()">सूचना प्रबंधन</a>
-            <div class="border-t border-gray-600 my-2"></div>
-            <button id="logoutBtn" class="text-red-400 hover:bg-red-900 hover:text-red-200 px-3 py-2 rounded-md text-sm font-medium w-full text-left">
-                <i class="fas fa-sign-out-alt mr-2"></i>Logout
-            </button>
         </div>
     </nav>
 
     <div class="main-content">
         <div id="add-markers" class="section active">
-            <div class="marker-form-container">
-                <div class="marker-form">
-                    <form id="markerForm" class="space-y-4">
-                        <div class="form-group">
-                            <label for="markerName" class="block text-sm font-medium text-gray-700">मार्कर का नाम</label>
-                            <input type="text" id="markerName" name="markerName" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="markerDescription" class="block text-sm font-medium text-gray-700">विवरण</label>
-                            <textarea id="markerDescription" name="markerDescription" rows="3" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="markerType" class="block text-sm font-medium text-gray-700">मार्कर का प्रकार</label>
-                            <select id="markerType" name="markerType" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                                <option value="TOURIST_SPOT">पर्यटन स्थल</option>
-                                <option value="HOSPITAL">अस्पताल</option>
-                                <option value="SCHOOL">स्कूल</option>
-                                <option value="RESTAURANT">रेस्टोरेंट</option>
-                                <option value="HOTEL">होटल</option>
-                                <option value="POLICE_STATION">पुलिस स्टेशन</option>
-                                <option value="FIRE_STATION">फायर स्टेशन</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="block text-sm font-medium text-gray-700">स्थान</label>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="markerLatitude" class="block text-xs text-gray-500">अक्षांश</label>
-                                    <input type="number" id="markerLatitude" name="markerLatitude" step="any" required readonly
-                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50">
-                                </div>
-                                <div>
-                                    <label for="markerLongitude" class="block text-xs text-gray-500">देशांतर</label>
-                                    <input type="number" id="markerLongitude" name="markerLongitude" step="any" required readonly
-                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50">
-                                </div>
-                            </div>
-                            <p class="mt-2 text-sm text-gray-500">मार्कर जोड़ने के लिए नक्शे पर क्लिक करें</p>
-                        </div>
-
-                        <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            मार्कर जोड़ें
-                        </button>
-                    </form>
-                </div>
-            </div>
-
+            <!-- Remove the marker-form-container/sidebar form entirely -->
             <div class="map-container">
                 <div id="map"></div>
             </div>
@@ -1057,10 +1066,69 @@
         </div>
     </div>
 
+    <!-- Marker Form Modal -->
+    <div class="marker-form-modal-bg" id="markerFormModalBg">
+      <div class="marker-form-modal">
+        <button type="button" class="close-form" id="closeMarkerFormBtn">&times;</button>
+        <form id="markerForm" class="space-y-4">
+          <div class="form-group">
+            <label for="markerName" class="block text-sm font-medium text-gray-700">मार्कर का नाम</label>
+            <input type="text" id="markerName" name="markerName" required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div class="form-group">
+            <label for="markerDescription" class="block text-sm font-medium text-gray-700">विवरण</label>
+            <textarea id="markerDescription" name="markerDescription" rows="3" required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="markerType" class="block text-sm font-medium text-gray-700">मार्कर का प्रकार</label>
+            <select id="markerType" name="markerType" required
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+              <option value="TOURIST_SPOT">पर्यटन स्थल</option>
+              <option value="HOSPITAL">अस्पताल</option>
+              <option value="SCHOOL">स्कूल</option>
+              <option value="RESTAURANT">रेस्टोरेंट</option>
+              <option value="HOTEL">होटल</option>
+              <option value="POLICE_STATION">पुलिस स्टेशन</option>
+              <option value="FIRE_STATION">फायर स्टेशन</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700">स्थान</label>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label for="markerLatitude" class="block text-xs text-gray-500">अक्षांश</label>
+                <input type="number" id="markerLatitude" name="markerLatitude" step="any" required readonly
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50">
+              </div>
+              <div>
+                <label for="markerLongitude" class="block text-xs text-gray-500">देशांतर</label>
+                <input type="number" id="markerLongitude" name="markerLongitude" step="any" required readonly
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50">
+              </div>
+            </div>
+            <p class="mt-2 text-sm text-gray-500">मार्कर जोड़ने के लिए नक्शे पर क्लिक करें</p>
+          </div>
+          <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+            मार्कर जोड़ें
+          </button>
+        </form>
+      </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
     <script>
+        // Add this at the beginning of your script section
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get admin name from session storage
+            const adminName = sessionStorage.getItem('username') || 'Admin';
+            document.getElementById('adminName').textContent = `Welcome, ${adminName}`;
+        });
+
         // Add a default config if it's not loaded
         if (typeof config === 'undefined') {
             config = {
@@ -1208,6 +1276,9 @@
                         markerForm.classList.add('show');
                     }
                 }
+
+                // Show marker form modal
+                markerFormModalBg.classList.add('show');
             } catch (error) {
                 console.error('Error handling map click:', error);
             }
@@ -1216,7 +1287,6 @@
         // Update marker form submission
         document.getElementById('markerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             try {
                 const markerData = {
                     name: document.getElementById('markerName').value.trim(),
@@ -1225,18 +1295,14 @@
                     latitude: parseFloat(document.getElementById('markerLatitude').value),
                     longitude: parseFloat(document.getElementById('markerLongitude').value)
                 };
-
-                // Validate form data
                 if (!markerData.name || !markerData.description) {
                     alert('Please fill in all required fields');
                     return;
                 }
-
                 if (isNaN(markerData.latitude) || isNaN(markerData.longitude)) {
                     alert('Please click on the map to set marker location');
                     return;
                 }
-
                 const response = await fetch(`${config.apiBaseUrl}/api/markers`, {
                     method: 'POST',
                     headers: {
@@ -1245,29 +1311,15 @@
                     },
                     body: JSON.stringify(markerData)
                 });
-
                 if (response.ok) {
-                    // Clear form
                     this.reset();
-                    
-                    // Remove temporary marker
                     if (selectedMarker && map.hasLayer(selectedMarker)) {
                         map.removeLayer(selectedMarker);
                         selectedMarker = null;
                     }
-
-                    // Reload markers
                     await loadMarkers();
-                    
                     alert('Marker added successfully!');
-
-                    // Hide form on mobile
-                    if (window.innerWidth <= 768) {
-                        const markerForm = document.querySelector('.marker-form');
-                        if (markerForm) {
-                            markerForm.classList.remove('show');
-                        }
-                    }
+                    markerFormModalBg.classList.remove('show'); // Close modal after adding marker
                 } else {
                     const error = await response.json();
                     throw new Error(error.message || 'Failed to add marker');
@@ -1799,6 +1851,9 @@
                                     <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" id="aapdaMitraBtn">
                                         <i class="fas fa-phone-alt mr-2"></i>Aapda Mitra
                                 </button>
+                                <button type="button" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600" id="showRouteBtn">
+                                    <i class="fas fa-route mr-2"></i>Show Route
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1837,6 +1892,111 @@
                     modalMap._occurrenceMarker = L.marker([occurrence.latitude, occurrence.longitude]).addTo(modalMap);
                 }
             }, 100);
+
+                // Add Show Route button logic
+                setTimeout(() => {
+                    const showRouteBtn = document.getElementById('showRouteBtn');
+                    if (showRouteBtn && occurrence.latitude && occurrence.longitude && modalMap) {
+                        let routingControl = null;
+                        let adminMarker = null;
+                        let watchId = null;
+                        let lastAdminLatLng = null;
+                        showRouteBtn.onclick = function() {
+                            if (routingControl) {
+                                modalMap.removeControl(routingControl);
+                                routingControl = null;
+                            }
+                            if (adminMarker) {
+                                modalMap.removeLayer(adminMarker);
+                                adminMarker = null;
+                            }
+                            if (watchId) {
+                                navigator.geolocation.clearWatch(watchId);
+                                watchId = null;
+                            }
+                            if (!navigator.geolocation) {
+                                alert('Geolocation is not supported by your browser.');
+                                return;
+                            }
+                            showRouteBtn.disabled = true;
+                            showRouteBtn.textContent = 'Loading route...';
+                            navigator.geolocation.getCurrentPosition(function(position) {
+                                const adminLatLng = [position.coords.latitude, position.coords.longitude];
+                                lastAdminLatLng = adminLatLng;
+                                routingControl = L.Routing.control({
+                                    waypoints: [
+                                        L.latLng(adminLatLng[0], adminLatLng[1]),
+                                        L.latLng(occurrence.latitude, occurrence.longitude)
+                                    ],
+                                    routeWhileDragging: false,
+                                    draggableWaypoints: false,
+                                    addWaypoints: false,
+                                    show: false,
+                                    fitSelectedRoutes: true,
+                                    lineOptions: { styles: [{ color: '#6366f1', weight: 5 }] },
+                                    createMarker: function(i, wp, nWps) {
+                                        if (i === 0) {
+                                            adminMarker = L.marker(wp.latLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', iconSize: [32, 32], iconAnchor: [16, 32] }) }).bindPopup('Your Location');
+                                            return adminMarker;
+                                        } else if (i === nWps - 1) {
+                                            return L.marker(wp.latLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32], iconAnchor: [16, 32] }) }).bindPopup('Occurrence Location');
+                                        } else {
+                                            return L.marker(wp.latLng);
+                                        }
+                                    }
+                                }).addTo(modalMap);
+                                showRouteBtn.disabled = false;
+                                showRouteBtn.textContent = 'Show Route';
+                                // Start watching position
+                                watchId = navigator.geolocation.watchPosition(function(pos) {
+                                    const latlng = [pos.coords.latitude, pos.coords.longitude];
+                                    if (adminMarker) {
+                                        adminMarker.setLatLng(latlng);
+                                        modalMap.setView(latlng, modalMap.getZoom(), { animate: true });
+                                    }
+                                    // Recalculate route if moved more than 50 meters from last route start
+                                    if (lastAdminLatLng) {
+                                        const dist = getDistanceFromLatLonInMeters(lastAdminLatLng[0], lastAdminLatLng[1], latlng[0], latlng[1]);
+                                        if (dist > 50) {
+                                            lastAdminLatLng = latlng;
+                                            if (routingControl) {
+                                                modalMap.removeControl(routingControl);
+                                            }
+                                            routingControl = L.Routing.control({
+                                                waypoints: [
+                                                    L.latLng(latlng[0], latlng[1]),
+                                                    L.latLng(occurrence.latitude, occurrence.longitude)
+                                                ],
+                                                routeWhileDragging: false,
+                                                draggableWaypoints: false,
+                                                addWaypoints: false,
+                                                show: false,
+                                                fitSelectedRoutes: true,
+                                                lineOptions: { styles: [{ color: '#6366f1', weight: 5 }] },
+                                                createMarker: function(i, wp, nWps) {
+                                                    if (i === 0) {
+                                                        adminMarker = L.marker(wp.latLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', iconSize: [32, 32], iconAnchor: [16, 32] }) }).bindPopup('Your Location');
+                                                        return adminMarker;
+                                                    } else if (i === nWps - 1) {
+                                                        return L.marker(wp.latLng, { icon: L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png', iconSize: [32, 32], iconAnchor: [16, 32] }) }).bindPopup('Occurrence Location');
+                                                    } else {
+                                                        return L.marker(wp.latLng);
+                                                    }
+                                                }
+                                            }).addTo(modalMap);
+                                        }
+                                    }
+                                }, function(error) {
+                                    // Optionally handle error
+                                }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
+                            }, function(error) {
+                                alert('Could not get your location: ' + error.message);
+                                showRouteBtn.disabled = false;
+                                showRouteBtn.textContent = 'Show Route';
+                            });
+                        };
+                    }
+                }, 500);
             } catch (error) {
                 console.error('Error showing occurrence details:', error);
                 alert('Error showing occurrence details. Please try again.');
@@ -1858,17 +2018,13 @@
         function formatDate(dateString) {
             if (!dateString) return 'N/A';
             try {
-                const date = new Date(dateString);
+                let date = new Date(dateString);
+                // If invalid, try parsing as local (for ISO without timezone)
+                if (isNaN(date.getTime()) && dateString.indexOf('T') > 0) {
+                    date = new Date(dateString.replace('T', ' '));
+                }
                 if (isNaN(date.getTime())) return 'N/A';
-                
-                const options = { 
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                };
-                return date.toLocaleDateString('en-US', options);
+                return date.toLocaleString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             } catch (error) {
                 console.error('Error formatting date:', error);
                 return 'N/A';
@@ -1878,7 +2034,7 @@
         // Add this function for full image view
         function showFullImage(imageUrl) {
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center full-image-modal';
             modal.innerHTML = `
                 <div class="relative">
                     <button onclick="this.parentElement.parentElement.remove()" 
@@ -2115,27 +2271,76 @@
 
         // Add hamburger menu functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const mobileMenuButton = document.querySelector('.mobile-menu-button');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
             const navLinks = document.querySelector('.nav-links');
-            
+            if (mobileMenuButton && navLinks) {
+                mobileMenuButton.addEventListener('click', () => {
+                    navLinks.classList.toggle('show');
+                });
+                // Close menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!navLinks.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+                        navLinks.classList.remove('show');
+                    }
+                });
+                // Close menu when a link is clicked
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        navLinks.classList.remove('show');
+                    });
+                });
+            }
+        });
+
+        // Hamburger menu toggle
+        const mobileMenuButton = document.querySelector('.mobile-menu-button');
+        const navLinks = document.querySelector('.nav-links');
+        if (mobileMenuButton && navLinks) {
             mobileMenuButton.addEventListener('click', () => {
-                navLinks.classList.toggle('show');
+                navLinks.classList.toggle('hidden');
             });
-            
             // Close menu when clicking outside
             document.addEventListener('click', (e) => {
                 if (!navLinks.contains(e.target) && !mobileMenuButton.contains(e.target)) {
-                    navLinks.classList.remove('show');
+                    navLinks.classList.add('hidden');
                 }
             });
-            
             // Close menu when a link is clicked
             navLinks.querySelectorAll('a').forEach(link => {
                 link.addEventListener('click', () => {
-                    navLinks.classList.remove('show');
+                    navLinks.classList.add('hidden');
                 });
             });
+        }
+
+        // --- Remove old/unused sidebar marker form close logic ---
+        // Only keep modal close logic for marker form modal
+        const markerFormModalBg = document.getElementById('markerFormModalBg');
+        const closeMarkerFormBtn = document.getElementById('closeMarkerFormBtn');
+        if (closeMarkerFormBtn) {
+            closeMarkerFormBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                markerFormModalBg.classList.remove('show');
+            });
+        }
+        markerFormModalBg.addEventListener('click', function(e) {
+            if (e.target === markerFormModalBg) markerFormModalBg.classList.remove('show');
         });
+
+        // Helper function to calculate distance between two lat/lon points in meters
+        function getDistanceFromLatLonInMeters(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // metres
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180;
+            const Δλ = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const d = R * c;
+            return d;
+        }
     </script>
 
     <!-- Emergency Contacts Modal -->

@@ -132,4 +132,8 @@ public class OccurrenceService {
     public List<Occurrence> findRecentlyVerifiedOccurrences(LocalDateTime since) {
         return occurrenceRepository.findByStatusAndVerifiedAtGreaterThanEqual("VERIFIED", since);
     }
+
+    public List<Occurrence> findByStatusAndReportedAtGreaterThanEqual(String status, java.time.LocalDateTime since) {
+        return occurrenceRepository.findByStatusAndReportedAtGreaterThanEqual(status, since);
+    }
 } 

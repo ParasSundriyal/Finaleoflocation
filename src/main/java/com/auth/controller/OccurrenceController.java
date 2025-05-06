@@ -196,4 +196,12 @@ public class OccurrenceController {
                     .body(new ErrorResponse("Error fetching verified occurrences: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/public/recent")
+    public ResponseEntity<List<Occurrence>> getRecentPublicOccurrences() {
+        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusHours(48);
+        // Only show VERIFIED occurrences for public ticker
+        List<Occurrence> recent = occurrenceService.findByStatusAndReportedAtGreaterThanEqual("VERIFIED", since);
+        return ResponseEntity.ok(recent);
+    }
 } 
